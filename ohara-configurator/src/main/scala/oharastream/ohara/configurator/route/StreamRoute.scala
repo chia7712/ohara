@@ -31,10 +31,10 @@ import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 private[configurator] object StreamRoute {
   private[this] def creationToClusterInfo(creation: Creation)(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     executionContext: ExecutionContext
   ): Future[StreamClusterInfo] =
-    objectChecker.checkList
+    dataChecker.checkList
       .nodeNames(creation.nodeNames)
       .file(creation.jarKey)
       .brokerCluster(creation.brokerClusterKey)
@@ -107,13 +107,13 @@ private[configurator] object StreamRoute {
       }
 
   private[this] def hookOfCreation(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     executionContext: ExecutionContext
   ): HookOfCreation[Creation, StreamClusterInfo] =
     creationToClusterInfo(_)
 
   private[this] def hookOfUpdating(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     executionContext: ExecutionContext
   ): HookOfUpdating[Updating, StreamClusterInfo] =
     (key: ObjectKey, updating: Updating, previousOption: Option[StreamClusterInfo]) =>
@@ -127,7 +127,7 @@ private[configurator] object StreamRoute {
               .creation
           )
         case Some(previous) =>
-          objectChecker.checkList
+          dataChecker.checkList
           // we don't support to update a running stream
             .stream(previous.key, DataCondition.STOPPED)
             .check()
@@ -147,7 +147,7 @@ private[configurator] object StreamRoute {
       }
 
   private[this] def hookOfStart(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     streamCollie: StreamCollie,
     executionContext: ExecutionContext
   ): HookOfAction[StreamClusterInfo] =
@@ -157,11 +157,12 @@ private[configurator] object StreamRoute {
       // define the node names in creating.
       if (streamClusterInfo.nodeNames.isEmpty)
         throw DeserializationException(s"the node names can't be empty", fieldNames = List("nodeNames"))
-      objectChecker.checkList
+      dataChecker.checkList
       // node names check is covered in super route
         .stream(streamClusterInfo.key)
         .file(streamClusterInfo.jarKey)
         .brokerCluster(streamClusterInfo.brokerClusterKey, DataCondition.RUNNING)
+        .volumes(streamClusterInfo.volumeMaps.keySet, DataCondition.RUNNING)
         .topics(
           // our UI needs to create a stream without topics so the stream info may has no topics...
           if (streamClusterInfo.toTopicKeys.isEmpty)
@@ -226,7 +227,7 @@ private[configurator] object StreamRoute {
   @nowarn("cat=deprecation")
   def apply(
     implicit store: DataStore,
-    objectChecker: DataChecker,
+    dataChecker: DataChecker,
     streamCollie: StreamCollie,
     serviceCollie: ServiceCollie,
     meterCache: MetricsCache,

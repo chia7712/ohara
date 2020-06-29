@@ -221,6 +221,8 @@ object BrokerApi {
     def numberOfIoThreads: Int                 = settings.numberOfIoThreads
 
     override def raw: Map[String, JsValue] = BROKER_CLUSTER_INFO_FORMAT.write(this).asJsObject.fields
+
+    override def volumeMaps: Map[ObjectKey, String] = settings.volumeMaps
   }
 
   /**
@@ -238,17 +240,22 @@ object BrokerApi {
     * this request is extended by collie also so it is public than sealed.
     */
   trait Request extends ClusterRequest {
-    @Optional("Ignoring zookeeper cluster key enable server to match a zk for you")
     def zookeeperClusterKey(zookeeperClusterKey: ObjectKey): Request.this.type =
       setting(ZOOKEEPER_CLUSTER_KEY_KEY, OBJECT_KEY_FORMAT.write(Objects.requireNonNull(zookeeperClusterKey)))
+
     @Optional("the default port is random")
     def clientPort(clientPort: Int): Request.this.type =
       setting(CLIENT_PORT_KEY, JsNumber(CommonUtils.requireConnectionPort(clientPort)))
+
     @Optional("the default port is random")
     def jmxPort(jmxPort: Int): Request.this.type =
       setting(JMX_PORT_KEY, JsNumber(CommonUtils.requireConnectionPort(jmxPort)))
+
     @Optional("default value is empty array")
     def tags(tags: Map[String, JsValue]): Request.this.type = setting(TAGS_KEY, JsObject(tags))
+
+    @Optional("default is no volume mounted on data folder so all data is in container")
+    def logDirs(volumeKeys: Set[ObjectKey]): Request.this.type = volumes(LOG_DIRS_KEY, volumeKeys)
 
     /**
       * broker information creation.

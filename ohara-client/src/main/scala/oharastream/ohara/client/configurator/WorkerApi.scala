@@ -259,6 +259,8 @@ object WorkerApi {
     override def kind: String = KIND
 
     override def raw: Map[String, JsValue] = WORKER_CLUSTER_INFO_FORMAT.write(this).asJsObject.fields
+
+    override def volumeMaps: Map[ObjectKey, String] = settings.volumeMaps
   }
 
   /**
@@ -284,33 +286,40 @@ object WorkerApi {
     def jmxPort(jmxPort: Int): Request.this.type =
       setting(JMX_PORT_KEY, JsNumber(CommonUtils.requireConnectionPort(jmxPort)))
 
-    @Optional("Ignoring the name will invoke an auto-mapping to existent broker cluster")
     def brokerClusterKey(brokerClusterKey: ObjectKey): Request.this.type =
       setting(BROKER_CLUSTER_KEY_KEY, OBJECT_KEY_FORMAT.write(Objects.requireNonNull(brokerClusterKey)))
 
     @Optional("the default port is random")
     def groupId(groupId: String): Request.this.type =
       setting(GROUP_ID_KEY, JsString(CommonUtils.requireNonEmpty(groupId)))
+
     @Optional("the default port is random")
     def statusTopicName(statusTopicName: String): Request.this.type =
       setting(STATUS_TOPIC_NAME_KEY, JsString(CommonUtils.requireNonEmpty(statusTopicName)))
+
     @Optional("the default number is 1")
     def statusTopicPartitions(statusTopicPartitions: Int): Request.this.type =
       setting(STATUS_TOPIC_PARTITIONS_KEY, JsNumber(CommonUtils.requirePositiveInt(statusTopicPartitions)))
+
     @Optional("the default number is 1")
     def statusTopicReplications(statusTopicReplications: Short): Request.this.type =
       setting(STATUS_TOPIC_REPLICATIONS_KEY, JsNumber(CommonUtils.requirePositiveShort(statusTopicReplications)))
+
     @Optional("the default number is random")
     def configTopicName(configTopicName: String): Request.this.type =
       setting(CONFIG_TOPIC_NAME_KEY, JsString(CommonUtils.requireNonEmpty(configTopicName)))
+
     @Optional("the default number is 1")
     def configTopicReplications(configTopicReplications: Short): Request.this.type =
       setting(CONFIG_TOPIC_REPLICATIONS_KEY, JsNumber(CommonUtils.requirePositiveShort(configTopicReplications)))
+
     def offsetTopicName(offsetTopicName: String): Request.this.type =
       setting(OFFSET_TOPIC_NAME_KEY, JsString(CommonUtils.requireNonEmpty(offsetTopicName)))
+
     @Optional("the default number is 1")
     def offsetTopicPartitions(offsetTopicPartitions: Int): Request.this.type =
       setting(OFFSET_TOPIC_PARTITIONS_KEY, JsNumber(CommonUtils.requirePositiveInt(offsetTopicPartitions)))
+
     @Optional("the default number is 1")
     def offsetTopicReplications(offsetTopicReplications: Short): Request.this.type =
       setting(OFFSET_TOPIC_REPLICATIONS_KEY, JsNumber(CommonUtils.requirePositiveShort(offsetTopicReplications)))

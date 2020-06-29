@@ -31,7 +31,7 @@ import oharastream.ohara.client.configurator.VolumeApi.VolumeState
 import oharastream.ohara.common.annotations.Optional
 import oharastream.ohara.common.pattern.Builder
 import oharastream.ohara.common.setting.{ObjectKey, WithDefinitions}
-import oharastream.ohara.common.util.{CommonUtils, Releasable}
+import oharastream.ohara.common.util.Releasable
 import oharastream.ohara.kafka.RowPartitioner
 import oharastream.ohara.kafka.connector.{RowSinkConnector, RowSourceConnector}
 import oharastream.ohara.stream.Stream
@@ -39,10 +39,10 @@ import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.ConfigurationBuilder
 
-import scala.jdk.CollectionConverters._
 import scala.compat.java8.OptionConverters._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters._
 
 /**
   * This is the top-of-the-range "collie". It maintains and organizes all collies.
@@ -195,24 +195,6 @@ abstract class ServiceCollie extends Releasable {
   }
 
   /**
-    * generate the plain name for ohara volume
-    * @param key volume key
-    * @return plain volume name
-    */
-  private[this] def volumeName(key: ObjectKey): String = s"${key.toPlain}-${CommonUtils.randomString(5)}"
-
-  /**
-    * parse the plain string to ohara key. If the volume is not controlled by ohara, the key is EMPTY.
-    * @param plain plain volume name
-    * @return ohara key or nothing
-    */
-  private[this] def volumeKey(plain: String): Option[ObjectKey] = {
-    val last = plain.lastIndexOf("-")
-    if (last < 0 || last >= plain.length) None
-    else ObjectKey.ofPlain(plain.substring(0, last)).asScala
-  }
-
-  /**
     * create volumes on specify nodes. If the node has volume already, it is no-op.
     * @param key volume key
     * @param nodeNames node names
@@ -228,7 +210,7 @@ abstract class ServiceCollie extends Releasable {
           containerClient.volumeCreator
             .nodeName(nodeName)
             .path(path)
-            .name(volumeName(key))
+            .name(key.toPlain)
             .create()
       )
       .map(_ => ())
@@ -242,7 +224,7 @@ abstract class ServiceCollie extends Releasable {
     containerClient
       .volumes()
       .map(_.flatMap { volume =>
-        volumeKey(volume.name) match {
+        ObjectKey.ofPlain(volume.name).asScala match {
           case None => None
           case Some(key) =>
             Some(
@@ -287,11 +269,11 @@ abstract class ServiceCollie extends Releasable {
     */
   final def removeVolumes(key: ObjectKey)(implicit executionContext: ExecutionContext): Future[Unit] =
     containerClient
-      .volumes(volumeName(key))
+      .volumes(key.toPlain)
       .map(
         _.filter(
-          v =>
-            volumeKey(v.name) match {
+          volume =>
+            ObjectKey.ofPlain(volume.name).asScala match {
               case None            => false
               case Some(volumeKey) => volumeKey == key
             }

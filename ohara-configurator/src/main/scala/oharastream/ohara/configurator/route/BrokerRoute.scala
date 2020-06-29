@@ -34,8 +34,8 @@ import scala.concurrent.{ExecutionContext, Future}
 object BrokerRoute {
   private[this] def creationToClusterInfo(
     creation: Creation
-  )(implicit objectChecker: DataChecker, executionContext: ExecutionContext): Future[BrokerClusterInfo] =
-    objectChecker.checkList
+  )(implicit dataChecker: DataChecker, executionContext: ExecutionContext): Future[BrokerClusterInfo] =
+    dataChecker.checkList
       .nodeNames(creation.nodeNames)
       .zookeeperCluster(creation.zookeeperClusterKey)
       .references(creation.raw, DEFINITIONS)
@@ -51,13 +51,13 @@ object BrokerRoute {
       }
 
   private[this] def hookOfCreation(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     executionContext: ExecutionContext
   ): HookOfCreation[Creation, BrokerClusterInfo] =
     creationToClusterInfo(_)
 
   private[this] def hookOfUpdating(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     executionContext: ExecutionContext
   ): HookOfUpdating[Updating, BrokerClusterInfo] =
     (key: ObjectKey, updating: Updating, previousOption: Option[BrokerClusterInfo]) =>
@@ -71,7 +71,7 @@ object BrokerRoute {
               .creation
           )
         case Some(previous) =>
-          objectChecker.checkList.brokerCluster(key, DataCondition.STOPPED).check().flatMap { _ =>
+          dataChecker.checkList.brokerCluster(key, DataCondition.STOPPED).check().flatMap { _ =>
             // 1) fill the previous settings (if exists)
             // 2) overwrite previous settings by updated settings
             // 3) fill the ignored settings by creation
@@ -87,15 +87,16 @@ object BrokerRoute {
       }
 
   private[this] def hookOfStart(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     serviceCollie: ServiceCollie,
     executionContext: ExecutionContext
   ): HookOfAction[BrokerClusterInfo] =
     (brokerClusterInfo: BrokerClusterInfo, _, _) =>
-      objectChecker.checkList
+      dataChecker.checkList
       // node names check is covered in super route
         .zookeeperCluster(brokerClusterInfo.zookeeperClusterKey, DataCondition.RUNNING)
         .allBrokers()
+        .volumes(brokerClusterInfo.volumeMaps.keySet, DataCondition.RUNNING)
         .check()
         .map(_.runningBrokers)
         .flatMap { runningBrokerClusters =>
@@ -151,11 +152,11 @@ object BrokerRoute {
   }
 
   private[this] def hookBeforeStop(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     executionContext: ExecutionContext
   ): HookOfAction[BrokerClusterInfo] =
     (brokerClusterInfo: BrokerClusterInfo, _: String, _: Map[String, String]) =>
-      objectChecker.checkList
+      dataChecker.checkList
         .allWorkers()
         .allStreams()
         .allShabondis()
@@ -168,11 +169,11 @@ object BrokerRoute {
         }
 
   private[this] def hookBeforeDelete(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     executionContext: ExecutionContext
   ): HookBeforeDelete =
     key =>
-      objectChecker.checkList
+      dataChecker.checkList
         .allWorkers()
         .allStreams()
         .allShabondis()
@@ -203,7 +204,7 @@ object BrokerRoute {
   @nowarn("cat=deprecation")
   def apply(
     implicit store: DataStore,
-    objectChecker: DataChecker,
+    dataChecker: DataChecker,
     meterCache: MetricsCache,
     brokerCollie: BrokerCollie,
     serviceCollie: ServiceCollie,

@@ -195,7 +195,7 @@ object DockerClient {
                 .mkString(" "),
               volumeMaps
                 .map {
-                  case (key: Volume, value: String) => s"""-v \"${key.name}:${value}\""""
+                  case (volume: Volume, value: String) => s"""-v \"${volume.key.toPlain}:$value\""""
                 }
                 .mkString(" "),
               // add label so we can distinguish the containers from others

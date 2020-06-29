@@ -21,19 +21,15 @@ import oharastream.ohara.common.setting.ObjectKey
 import oharastream.ohara.common.util.CommonUtils
 import org.junit.Test
 import org.scalatest.matchers.should.Matchers._
+import spray.json._
 
 class TestVolumeApi extends OharaTest {
-  @Test
-  def testOnlyPath(): Unit =
-    VolumeApi.access.request
-      .path(CommonUtils.randomString())
-      .creation
-
   @Test
   def testNameInCreation(): Unit =
     VolumeApi.access.request
       .name("ab")
       .path(CommonUtils.randomString())
+      .nodeNames(Set("a"))
       .creation
       .name shouldBe "ab"
 
@@ -42,6 +38,7 @@ class TestVolumeApi extends OharaTest {
     VolumeApi.access.request
       .group("ab")
       .path(CommonUtils.randomString())
+      .nodeNames(Set("a"))
       .creation
       .group shouldBe "ab"
 
@@ -50,6 +47,7 @@ class TestVolumeApi extends OharaTest {
     val creation = VolumeApi.access.request
       .key(ObjectKey.of("g", "n"))
       .path(CommonUtils.randomString())
+      .nodeNames(Set("a"))
       .creation
     creation.group shouldBe "g"
     creation.name shouldBe "n"
@@ -58,6 +56,7 @@ class TestVolumeApi extends OharaTest {
   @Test
   def testPathInCreation(): Unit =
     VolumeApi.access.request
+      .nodeNames(Set("A"))
       .path("a")
       .creation
       .path shouldBe "a"
@@ -74,10 +73,42 @@ class TestVolumeApi extends OharaTest {
   def testDefaultTagsInCreation(): Unit =
     VolumeApi.access.request
       .path(CommonUtils.randomString())
+      .nodeNames(Set("A"))
       .creation
       .tags shouldBe Map.empty
 
   @Test
   def testDefaultTagsInUpdating(): Unit =
     VolumeApi.access.request.updating.tags shouldBe None
+
+  @Test
+  def testEmptyNodeNamesOnCreation(): Unit =
+    an[IllegalArgumentException] should be thrownBy VolumeApi.access.request
+      .path("a")
+      .nodeNames(Set.empty)
+      .creation
+
+  @Test
+  def testEmptyNodeNamesOnUpdating(): Unit =
+    an[IllegalArgumentException] should be thrownBy VolumeApi.access.request
+      .path("a")
+      .nodeNames(Set.empty)
+      .updating
+
+  @Test
+  def testEmptyNodeNamesJson(): Unit =
+    an[DeserializationException] should be thrownBy VolumeApi.CREATION_FORMAT.read(s"""
+                                      |  {
+                                      |    "path": "${CommonUtils.randomString()}",
+                                      |    "nodeNames": []
+                                      |  }
+      """.stripMargin.parseJson)
+
+  @Test
+  def testNullNodeNamesJson(): Unit =
+    an[DeserializationException] should be thrownBy VolumeApi.CREATION_FORMAT.read(s"""
+                                      |  {
+                                      |    "path": "${CommonUtils.randomString()}"
+                                      |  }
+      """.stripMargin.parseJson)
 }

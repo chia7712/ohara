@@ -190,6 +190,8 @@ object ZookeeperApi {
     def dataDir: String                                                      = settings.dataFolder
 
     override def raw: Map[String, JsValue] = ZOOKEEPER_CLUSTER_INFO_FORMAT.write(this).asJsObject.fields
+
+    override def volumeMaps: Map[ObjectKey, String] = settings.volumeMaps
   }
 
   /**
@@ -210,16 +212,23 @@ object ZookeeperApi {
     @Optional("the default port is random")
     def jmxPort(jmxPort: Int): Request.this.type =
       setting(JMX_PORT_KEY, JsNumber(CommonUtils.requireConnectionPort(jmxPort)))
+
     def clientPort(clientPort: Int): Request.this.type =
       setting(CLIENT_PORT_KEY, JsNumber(CommonUtils.requireConnectionPort(clientPort)))
+
     @Optional("the default port is random")
     def peerPort(peerPort: Int): Request.this.type =
       setting(PEER_PORT_KEY, JsNumber(CommonUtils.requireConnectionPort(peerPort)))
+
     @Optional("the default port is random")
     def electionPort(electionPort: Int): Request.this.type =
       setting(ELECTION_PORT_KEY, JsNumber(CommonUtils.requireConnectionPort(electionPort)))
+
     @Optional("default value is empty array in creation and None in update")
     def tags(tags: Map[String, JsValue]): Request.this.type = setting(TAGS_KEY, JsObject(tags))
+
+    @Optional("default is no volume mounted on data folder so all data is in container")
+    def dataDir(volumeKey: ObjectKey): Request.this.type = volume(DATA_DIR_KEY, volumeKey)
 
     /**
       * zookeeper information creation.

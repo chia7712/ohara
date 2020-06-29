@@ -37,7 +37,7 @@ private[configurator] class FakeServiceCollie(
 ) extends ServiceCollie {
   def this(dataCollie: DataCollie) = this(dataCollie, null, null)
 
-  private[this] val client = new ContainerClient {
+  private[this] val client: ContainerClient = new ContainerClient {
     override def containers()(implicit executionContext: ExecutionContext): Future[Seq[ContainerApi.ContainerInfo]] =
       throw new UnsupportedOperationException("this is fake container client")
 
@@ -61,21 +61,29 @@ private[configurator] class FakeServiceCollie(
     override def resources()(implicit executionContext: ExecutionContext): Future[Map[String, Seq[Resource]]] =
       throw new UnsupportedOperationException("this is fake container client")
 
+    /**
+      * volume name -> node name -> volume
+      */
+    private[this] val existentVolumes = new ConcurrentHashMap[String, ConcurrentHashMap[String, ContainerVolume]]()
+
     override def volumeCreator: ContainerClient.VolumeCreator =
       (nodeName: String, name: String, path: String, _: ExecutionContext) => {
-        val v = ContainerVolume(
+        val volume = ContainerVolume(
           name = name,
           driver = "fake",
           path = path,
           nodeName = nodeName
         )
-        val previous = existentVolumes.putIfAbsent(name, v)
-        if (previous != null) Future.failed(new IllegalArgumentException(s"$name exists!!!"))
-        else Future.unit
+
+        val updated = existentVolumes
+          .computeIfAbsent(name, _ => new ConcurrentHashMap[String, ContainerVolume])
+          .computeIfAbsent(volume.nodeName, _ => volume)
+        if (updated == volume) Future.unit
+        else Future.failed(new IllegalArgumentException(s"$name exists on ${volume.nodeName}!!!"))
       }
 
     override def volumes()(implicit executionContext: ExecutionContext): Future[Seq[ContainerVolume]] =
-      Future.successful(existentVolumes.values().asScala.toSeq)
+      Future.successful(existentVolumes.values().asScala.flatMap(_.asScala.values).toSeq)
 
     override def removeVolumes(name: String)(implicit executionContext: ExecutionContext): Future[Unit] = {
       existentVolumes.remove(name)
@@ -83,8 +91,6 @@ private[configurator] class FakeServiceCollie(
     }
     override def close(): Unit = existentVolumes.clear()
   }
-
-  private[this] val existentVolumes = new ConcurrentHashMap[String, ContainerVolume]()
 
   override val zookeeperCollie: FakeZookeeperCollie = new FakeZookeeperCollie(client, dataCollie)
 

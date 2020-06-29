@@ -21,6 +21,7 @@ import oharastream.ohara.client.configurator.ShabondiApi.ShabondiClusterInfo
 import oharastream.ohara.client.configurator.StreamApi.StreamClusterInfo
 import oharastream.ohara.client.configurator.WorkerApi.WorkerClusterInfo
 import oharastream.ohara.client.configurator.ZookeeperApi.ZookeeperClusterInfo
+import oharastream.ohara.common.setting.ObjectKey
 import spray.json.DefaultJsonProtocol._
 import spray.json.JsValue
 
@@ -109,4 +110,11 @@ trait ClusterInfo extends Data {
     * @return size (in MB) of max heap
     */
   def maxHeap: Int = settings(MAX_HEAP_KEY).convertTo[Int]
+
+  /**
+    * @return the volume object key and related container path. For example, "{"group":"a", "name": "b"}" -> "/tmp/aaa" means the
+    *         object key "{"group":"a", "name": "b"}" is mapped to a volume and the volume should be mounted on
+    *         container's "/tmp/aaa"
+    */
+  def volumeMaps: Map[ObjectKey, String] = Map.empty
 }

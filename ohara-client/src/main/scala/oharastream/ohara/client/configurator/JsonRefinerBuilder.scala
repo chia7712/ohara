@@ -134,7 +134,10 @@ trait JsonRefinerBuilder[T] extends oharastream.ohara.common.pattern.Builder[Jso
                 definition.key(),
                 (array: JsArray) =>
                   if (array.elements.isEmpty)
-                    throw DeserializationException(s"empty array is illegal", fieldNames = List(definition.key()))
+                    throw DeserializationException(
+                      s"empty array is illegal to ${definition.key()}",
+                      fieldNames = List(definition.key())
+                    )
               )
             case _ =>
               requireJsonType[JsArray](definition.key(), _ => ())

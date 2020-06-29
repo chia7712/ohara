@@ -68,6 +68,9 @@ public interface ObjectKey extends Comparable<ObjectKey> {
             });
   }
 
+  /**
+   * @return a plain string consisting of group and name. Noted: this is NOT equal to json string
+   */
   default String toPlain() {
     return group() + "-" + name();
   }

@@ -26,7 +26,7 @@ import spray.json.DefaultJsonProtocol._
 import spray.json.{JsString, JsValue, RootJsonFormat}
 
 import scala.concurrent.{ExecutionContext, Future}
-
+import scala.jdk.CollectionConverters._
 object VolumeApi {
   val KIND: String = SettingDef.Reference.VOLUME.name().toLowerCase
 
@@ -43,6 +43,7 @@ object VolumeApi {
     rulesOfKey[Creation]
       .format(jsonFormat5(Creation))
       .nullToEmptyObject(TAGS_KEY)
+      .rejectEmptyArray(NODE_NAMES_KEY)
       .build
 
   final case class Updating(
@@ -54,7 +55,10 @@ object VolumeApi {
   }
 
   implicit val UPDATING_FORMAT: RootJsonFormat[Updating] =
-    JsonRefinerBuilder[Updating].format(jsonFormat3(Updating)).build
+    JsonRefinerBuilder[Updating]
+      .format(jsonFormat3(Updating))
+      .rejectEmptyArray(NODE_NAMES_KEY)
+      .build
 
   abstract sealed class VolumeState(val name: String) extends Serializable
   object VolumeState extends Enum[VolumeState] {
@@ -84,7 +88,7 @@ object VolumeApi {
   implicit val VOLUME_FORMAT: RootJsonFormat[Volume] =
     rulesOfKey[Volume]
       .format(jsonFormat8(Volume))
-      .rejectEmptyArray("nodeNames")
+      .rejectEmptyArray(NODE_NAMES_KEY)
       .nullToEmptyObject(TAGS_KEY)
       .build
 
@@ -136,7 +140,7 @@ object VolumeApi {
           Creation(
             group = CommonUtils.requireNonEmpty(group),
             name = CommonUtils.requireNonEmpty(name),
-            nodeNames = nodeNames.getOrElse(Set.empty),
+            nodeNames = CommonUtils.requireNonEmpty(nodeNames.getOrElse(Set.empty).asJava).asScala.toSet,
             path = CommonUtils.requireNonEmpty(path.orNull),
             tags = tags.getOrElse(Map.empty)
           )
@@ -147,8 +151,8 @@ object VolumeApi {
       UPDATING_FORMAT.read(
         UPDATING_FORMAT.write(
           Updating(
-            nodeNames = nodeNames,
-            path = path,
+            nodeNames = nodeNames.map(ns => CommonUtils.requireNonEmpty(ns.asJava).asScala.toSet),
+            path = path.map(CommonUtils.requireNonEmpty),
             tags = tags
           )
         )
@@ -171,6 +175,24 @@ object VolumeApi {
 
   class Access private[configurator]
       extends oharastream.ohara.client.configurator.Access[Creation, Updating, Volume](KIND) {
+    /**
+      * start to deploy the volume on specify nodes
+      * @param key object key
+      * @param executionContext thread pool
+      * @return async call. the deployment is executed async
+      */
+    def start(key: ObjectKey)(implicit executionContext: ExecutionContext): Future[Unit] =
+      put(key, START_COMMAND)
+
+    /**
+      * remove the volume from specify nodes
+      * @param key object key
+      * @param executionContext thread pool
+      * @return async call. the deployment is executed async
+      */
+    def stop(key: ObjectKey)(implicit executionContext: ExecutionContext): Future[Unit] =
+      put(key, STOP_COMMAND)
+
     def request: Request = new Request {
       override def create()(implicit executionContext: ExecutionContext): Future[Volume] = post(creation)
       override def update()(implicit executionContext: ExecutionContext): Future[Volume] =

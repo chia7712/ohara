@@ -49,9 +49,11 @@ trait ClusterRequest {
   @Optional("default name is a random string. But it is required in updating")
   def name(name: String): ClusterRequest.this.type =
     setting(NAME_KEY, JsString(CommonUtils.requireNonEmpty(name)))
+
   @Optional("default is GROUP_DEFAULT")
   def group(group: String): ClusterRequest.this.type =
     setting(GROUP_KEY, JsString(CommonUtils.requireNonEmpty(group)))
+
   def nodeName(nodeName: String): ClusterRequest.this.type = nodeNames(Set(CommonUtils.requireNonEmpty(nodeName)))
   def nodeNames(nodeNames: Set[String]): ClusterRequest.this.type =
     setting(NODE_NAMES_KEY, JsArray(CommonUtils.requireNonEmpty(nodeNames.asJava).asScala.map(JsString(_)).toVector))
@@ -70,9 +72,16 @@ trait ClusterRequest {
   def maxHeap(sizeInMB: Int): ClusterRequest.this.type =
     setting(MAX_HEAP_KEY, JsNumber(CommonUtils.requirePositiveInt(sizeInMB)))
 
+  protected def volume(key: String, volumeKey: ObjectKey): ClusterRequest.this.type =
+    setting(key, OBJECT_KEY_FORMAT.write(volumeKey))
+
+  protected def volumes(key: String, volumeKeys: Set[ObjectKey]): ClusterRequest.this.type =
+    setting(key, JsArray(volumeKeys.map(OBJECT_KEY_FORMAT.write).toVector))
+
   @Optional("extra settings is empty by default")
   def setting(key: String, value: JsValue): ClusterRequest.this.type =
     settings(Map(key -> value))
+
   @Optional("extra settings is empty by default")
   def settings(settings: Map[String, JsValue]): ClusterRequest.this.type = {
     // We don't have to check the settings is empty here for the following reasons:

@@ -100,7 +100,7 @@ class Configurator private[configurator] (val hostname: String, val port: Int)(
   private[this] implicit val workerCollie: WorkerCollie       = serviceCollie.workerCollie
   private[this] implicit val streamCollie: StreamCollie       = serviceCollie.streamCollie
   private[this] implicit val shabondiCollie: ShabondiCollie   = serviceCollie.shabondiCollie
-  private[this] implicit val objectChecker: DataChecker       = DataChecker()
+  private[this] implicit val dataChecker: DataChecker         = DataChecker()
 
   def mode: Mode = serviceCollie match {
     case _: ServiceCollieImpl                                     => Mode.DOCKER
@@ -234,6 +234,7 @@ class Configurator private[configurator] (val hostname: String, val port: Int)(
         WorkerRoute.apply,
         FileInfoRoute.apply,
         LogRoute.apply,
+        VolumeRoute.apply,
         ObjectRoute.apply,
         ContainerRoute.apply
       ).reduce[server.Route]((a, b) => a ~ b)

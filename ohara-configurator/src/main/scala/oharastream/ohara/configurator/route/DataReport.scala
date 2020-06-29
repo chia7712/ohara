@@ -51,4 +51,5 @@ case class DataReport(
   def runningWorkers: Seq[WorkerClusterInfo]     = workerClusterInfos.filter(_._2 == DataCondition.RUNNING).keys.toSeq
   def runningStreams: Seq[StreamClusterInfo]     = streamClusterInfos.filter(_._2 == DataCondition.RUNNING).keys.toSeq
   def runningShabondis: Seq[ShabondiClusterInfo] = shabondiClusterInfos.filter(_._2 == DataCondition.RUNNING).keys.toSeq
+  def runningVolumes: Seq[Volume]                = volumes.filter(_._2 == DataCondition.RUNNING).keys.toSeq
 }

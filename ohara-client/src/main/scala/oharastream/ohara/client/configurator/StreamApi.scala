@@ -151,6 +151,8 @@ object StreamApi {
     def connectionProps: String      = settings.connectionProps
 
     override def raw: Map[String, JsValue] = STREAM_CLUSTER_INFO_FORMAT.write(this).asJsObject.fields
+
+    override def volumeMaps: Map[ObjectKey, String] = settings.volumeMaps
   }
 
   private[ohara] implicit val STREAM_CLUSTER_INFO_FORMAT: JsonRefiner[StreamClusterInfo] =

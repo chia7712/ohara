@@ -335,7 +335,9 @@ object K8SClient {
                       if (volumeMaps.isEmpty) None
                       else
                         Some(
-                          volumeMaps.map(v => K8SVolume(v._1.name, Some(MountPersistentVolumeClaim(v._1.name)))).toSeq
+                          volumeMaps
+                            .map(v => K8SVolume(v._1.key.toPlain, Some(MountPersistentVolumeClaim(v._1.key.toPlain))))
+                            .toSeq
                         )
                   )
                 }

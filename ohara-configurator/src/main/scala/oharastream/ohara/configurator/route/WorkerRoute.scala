@@ -31,8 +31,8 @@ import scala.concurrent.{ExecutionContext, Future}
 object WorkerRoute {
   private[this] def creationToClusterInfo(
     creation: Creation
-  )(implicit objectChecker: DataChecker, executionContext: ExecutionContext): Future[WorkerClusterInfo] =
-    objectChecker.checkList
+  )(implicit dataChecker: DataChecker, executionContext: ExecutionContext): Future[WorkerClusterInfo] =
+    dataChecker.checkList
       .nodeNames(creation.nodeNames)
       .brokerCluster(creation.brokerClusterKey)
       .files(creation.pluginKeys)
@@ -51,20 +51,20 @@ object WorkerRoute {
       )
 
   private[this] def hookOfCreation(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     executionContext: ExecutionContext
   ): HookOfCreation[Creation, WorkerClusterInfo] =
     creationToClusterInfo(_)
 
   private[this] def hookOfUpdating(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     executionContext: ExecutionContext
   ): HookOfUpdating[Updating, WorkerClusterInfo] =
     (key: ObjectKey, updating: Updating, previousOption: Option[WorkerClusterInfo]) =>
       previousOption match {
         case None => creationToClusterInfo(WorkerApi.access.request.settings(updating.raw).key(key).creation)
         case Some(previous) =>
-          objectChecker.checkList.workerCluster(key, DataCondition.STOPPED).check().flatMap { _ =>
+          dataChecker.checkList.workerCluster(key, DataCondition.STOPPED).check().flatMap { _ =>
             // 1) fill the previous settings (if exists)
             // 2) overwrite previous settings by updated settings
             // 3) fill the ignored settings by creation
@@ -88,15 +88,16 @@ object WorkerRoute {
   }
 
   private[this] def hookOfStart(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     serviceCollie: ServiceCollie,
     executionContext: ExecutionContext
   ): HookOfAction[WorkerClusterInfo] =
     (workerClusterInfo: WorkerClusterInfo, _, _) =>
-      objectChecker.checkList
+      dataChecker.checkList
       // node names check is covered in super route
         .brokerCluster(workerClusterInfo.brokerClusterKey, DataCondition.RUNNING)
         .allWorkers()
+        .volumes(workerClusterInfo.volumeMaps.keySet, DataCondition.RUNNING)
         .check()
         .map(_.runningWorkers)
         .flatMap { runningWorkerClusters =>
@@ -153,18 +154,18 @@ object WorkerRoute {
         .map(_ => ())
 
   private[this] def hookBeforeStop(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     executionContext: ExecutionContext
   ): HookOfAction[WorkerClusterInfo] =
     (workerClusterInfo: WorkerClusterInfo, _, _) =>
-      objectChecker.checkList.allConnectors().check().map(_.runningConnectors).map(checkConflict(workerClusterInfo, _))
+      dataChecker.checkList.allConnectors().check().map(_.runningConnectors).map(checkConflict(workerClusterInfo, _))
 
   private[this] def hookBeforeDelete(
-    implicit objectChecker: DataChecker,
+    implicit dataChecker: DataChecker,
     executionContext: ExecutionContext
   ): HookBeforeDelete =
     key =>
-      objectChecker.checkList
+      dataChecker.checkList
         .allConnectors()
         .workerCluster(key, DataCondition.STOPPED)
         .check()
@@ -182,7 +183,7 @@ object WorkerRoute {
   @nowarn("cat=deprecation")
   def apply(
     implicit store: DataStore,
-    objectChecker: DataChecker,
+    dataChecker: DataChecker,
     meterCache: MetricsCache,
     workerCollie: WorkerCollie,
     serviceCollie: ServiceCollie,

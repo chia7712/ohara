@@ -17,9 +17,12 @@
 package oharastream.ohara.configurator.route
 
 import akka.http.scaladsl.server
-import oharastream.ohara.client.configurator.VolumeApi
+import oharastream.ohara.agent.ServiceCollie
 import oharastream.ohara.client.configurator.VolumeApi.{Creation, Updating, Volume}
+import oharastream.ohara.client.configurator.{ClusterInfo, VolumeApi}
+import oharastream.ohara.common.setting.ObjectKey
 import oharastream.ohara.common.util.CommonUtils
+import oharastream.ohara.configurator.route.hook.{HookBeforeDelete, HookOfAction}
 import oharastream.ohara.configurator.store.DataStore
 import spray.json.DeserializationException
 
@@ -40,7 +43,109 @@ private[configurator] object VolumeRoute {
       )
     )
 
-  def apply(implicit store: DataStore, executionContext: ExecutionContext): server.Route =
+  private[this] def hookOfStart(
+    implicit dataChecker: DataChecker,
+    serviceCollie: ServiceCollie,
+    executionContext: ExecutionContext
+  ): HookOfAction[Volume] =
+    (volume: Volume, _, _) =>
+      dataChecker.checkList
+        .volume(volume.key)
+        .check()
+        .map(_.volumes.head)
+        .flatMap {
+          case (volume, condition) =>
+            condition match {
+              case DataCondition.RUNNING => Future.unit
+              case DataCondition.STOPPED =>
+                serviceCollie.createLocalVolumes(volume.key, volume.path, volume.nodeNames)
+            }
+        }
+
+  /**
+    * throw exception if the volume is used by service
+    * @param volumeKey volume key
+    */
+  private[this] def check(
+    volumeKey: ObjectKey,
+    clusterInfo: ClusterInfo
+  ): Unit =
+    if (clusterInfo.volumeMaps.keys.exists(_ == volumeKey))
+      throw new IllegalArgumentException(s"volume: $volumeKey is used by ${clusterInfo.kind}: ${clusterInfo.key}")
+
+  private[this] def hookOfStop(
+    implicit dataChecker: DataChecker,
+    serviceCollie: ServiceCollie,
+    executionContext: ExecutionContext
+  ): HookOfAction[Volume] =
+    (volume: Volume, _, _) =>
+      dataChecker.checkList
+        .allZookeepers()
+        .allBrokers()
+        .allWorkers()
+        .allStreams()
+        .volume(volume.key)
+        .check()
+        .map(
+          report =>
+            (
+              report.volumes.head._2,
+              report.runningZookeepers,
+              report.runningBrokers,
+              report.runningWorkers,
+              report.runningStreams
+            )
+        )
+        .flatMap {
+          case (condition, runningZookeepers, runningBrokers, runningWorkers, runningStreams) =>
+            condition match {
+              case DataCondition.STOPPED => Future.unit
+              case DataCondition.RUNNING =>
+                runningZookeepers.foreach(check(volume.key, _))
+                runningBrokers.foreach(check(volume.key, _))
+                runningWorkers.foreach(check(volume.key, _))
+                runningStreams.foreach(check(volume.key, _))
+                serviceCollie.removeVolumes(volume.key)
+            }
+        }
+
+  private[this] def hookBeforeDelete(
+    implicit dataChecker: DataChecker,
+    serviceCollie: ServiceCollie,
+    executionContext: ExecutionContext
+  ): HookBeforeDelete =
+    volumeKey =>
+      dataChecker.checkList
+        .allZookeepers()
+        .allBrokers()
+        .allWorkers()
+        .allStreams()
+        .volume(volumeKey, DataCondition.STOPPED)
+        .check()
+        .map(
+          report =>
+            (
+              report.zookeeperClusterInfos.keys,
+              report.brokerClusterInfos.keys,
+              report.workerClusterInfos.keys,
+              report.streamClusterInfos.keys
+            )
+        )
+        .flatMap {
+          case (zookeepers, brokers, workers, streams) =>
+            zookeepers.foreach(check(volumeKey, _))
+            brokers.foreach(check(volumeKey, _))
+            workers.foreach(check(volumeKey, _))
+            streams.foreach(check(volumeKey, _))
+            serviceCollie.removeVolumes(volumeKey)
+        }
+
+  def apply(
+    implicit store: DataStore,
+    dataChecker: DataChecker,
+    serviceCollie: ServiceCollie,
+    executionContext: ExecutionContext
+  ): server.Route =
     RouteBuilder[Creation, Updating, Volume]()
       .prefixOfPlural("volumes")
       .prefixOfSingular(VolumeApi.KIND)
@@ -69,8 +174,28 @@ private[configurator] object VolumeRoute {
               )
           })
       )
-      .hookOfGet(Future.successful(_))
-      .hookOfList(Future.successful(_))
-      .hookBeforeDelete(_ => Future.unit)
+      .hookOfGet(
+        volume =>
+          serviceCollie.volumes().map(_.find(_.key == volume.key)).map {
+            case None => volume
+            case Some(runningVolume) =>
+              volume.copy(state = runningVolume.state, error = runningVolume.error)
+          }
+      )
+      .hookOfList(
+        volumes =>
+          serviceCollie.volumes().map { runningVolumes =>
+            volumes.map { volume =>
+              runningVolumes.find(_.key == volume.key) match {
+                case None => volume
+                case Some(runningVolume) =>
+                  volume.copy(state = runningVolume.state, error = runningVolume.error)
+              }
+            }
+          }
+      )
+      .hookBeforeDelete(hookBeforeDelete)
+      .hookOfPutAction(START_COMMAND, hookOfStart)
+      .hookOfPutAction(STOP_COMMAND, hookOfStop)
       .build()
 }
