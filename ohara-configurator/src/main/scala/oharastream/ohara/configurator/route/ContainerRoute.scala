@@ -15,6 +15,7 @@
  */
 
 package oharastream.ohara.configurator.route
+
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.server
 import akka.http.scaladsl.server.Directives._
@@ -24,13 +25,11 @@ import oharastream.ohara.client.configurator.ContainerApi._
 import oharastream.ohara.common.setting.ObjectKey
 import spray.json.DefaultJsonProtocol._
 
-import scala.annotation.nowarn
 import scala.concurrent.ExecutionContext
 
 object ContainerRoute {
-  @nowarn("cat=deprecation")
   def apply(implicit serviceCollie: ServiceCollie, executionContext: ExecutionContext): server.Route =
-    path((ContainerApi.CONTAINER_PREFIX_PATH | ContainerApi.KIND) / Segment)({ clusterName =>
+    path(ContainerApi.PREFIX_PATH / Segment)({ clusterName =>
       parameter(GROUP_KEY ? GROUP_DEFAULT) { group =>
         get {
           complete(

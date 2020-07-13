@@ -129,7 +129,7 @@ private[configurator] object InspectRoute {
     objectChecker: DataChecker,
     executionContext: ExecutionContext
   ): server.Route = pathPrefix(KIND) {
-    path(RDB_PREFIX | "rdb") {
+    path(RDB_PREFIX) {
       post {
         entity(as[RdbQuery]) { query =>
           complete(both(query.workerClusterKey) { (_, connectorAdmin, _, topicAdmin) =>
@@ -157,7 +157,7 @@ private[configurator] object InspectRoute {
           })
         }
       }
-    } ~ path((TopicApi.PREFIX | TopicApi.KIND) / Segment) { topicName =>
+    } ~ path(TopicApi.PREFIX / Segment) { topicName =>
       post {
         parameters(
           (
@@ -246,7 +246,7 @@ private[configurator] object InspectRoute {
           )
         }
       }
-    } ~ path(FileInfoApi.PREFIX | FileInfoApi.KIND) {
+    } ~ path(FileInfoApi.PREFIX) {
       FileInfoRoute.routeOfUploadingFile(urlMaker = _ => None, storeOption = None)
     } ~ path(oharastream.ohara.client.configurator.CONFIGURATOR_KIND) {
       complete(
@@ -262,7 +262,7 @@ private[configurator] object InspectRoute {
           k8sUrls = k8sUrls
         )
       )
-    } ~ pathPrefix(WorkerApi.PREFIX | WorkerApi.KIND) {
+    } ~ pathPrefix(WorkerApi.PREFIX) {
       path(Segment) { name =>
         parameters(GROUP_KEY ? GROUP_DEFAULT) { group =>
           complete(
@@ -291,7 +291,7 @@ private[configurator] object InspectRoute {
           )
         )
       }
-    } ~ pathPrefix(BrokerApi.PREFIX | BrokerApi.KIND) {
+    } ~ pathPrefix(BrokerApi.PREFIX) {
       path(Segment) { name =>
         parameters(GROUP_KEY ? GROUP_DEFAULT) { group =>
           complete(
@@ -303,7 +303,7 @@ private[configurator] object InspectRoute {
       } ~ pathEnd {
         complete(brokerDefinition)
       }
-    } ~ pathPrefix(ZookeeperApi.PREFIX | ZookeeperApi.KIND) {
+    } ~ pathPrefix(ZookeeperApi.PREFIX) {
       path(Segment) { name =>
         parameters(GROUP_KEY ? GROUP_DEFAULT) { group =>
           complete(
@@ -315,7 +315,7 @@ private[configurator] object InspectRoute {
       } ~ pathEnd {
         complete(zookeeperDefinition)
       }
-    } ~ pathPrefix(StreamApi.PREFIX | StreamApi.KIND) {
+    } ~ pathPrefix(StreamApi.PREFIX) {
       path(Segment) { name =>
         parameters(GROUP_KEY ? GROUP_DEFAULT) { group =>
           complete(
@@ -347,7 +347,7 @@ private[configurator] object InspectRoute {
           )
         )
       }
-    } ~ pathPrefix(ShabondiApi.PREFIX | ShabondiApi.KIND) {
+    } ~ pathPrefix(ShabondiApi.PREFIX) {
       path(Segment) { _ =>
         parameters(GROUP_KEY ? GROUP_DEFAULT) { _ =>
           complete(shabondiDefinition)
