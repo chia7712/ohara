@@ -51,7 +51,7 @@ RUN yum install -y \
 
 # download gradle
 # gradle version should be equal to version in gradle-wrapper.properties
-ARG GRADLE_VERSION=6.5.1
+ARG GRADLE_VERSION=6.6
 WORKDIR /opt/gradle
 RUN wget https://downloads.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
 RUN unzip gradle-$GRADLE_VERSION-bin.zip
