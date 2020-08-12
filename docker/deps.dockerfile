@@ -49,18 +49,6 @@ RUN yum install -y \
   alsa-lib* \
   libgtk-3*
 
-# download gradle
-# gradle version should be equal to version in gradle-wrapper.properties
-ARG GRADLE_VERSION=6.6
-WORKDIR /opt/gradle
-RUN wget https://downloads.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
-RUN unzip gradle-$GRADLE_VERSION-bin.zip
-RUN rm -f gradle-$GRADLE_VERSION-bin.zip
-
-# add gradle to path
-ENV GRADLE_HOME=/opt/gradle/gradle-$GRADLE_VERSION
-ENV PATH=$PATH:$GRADLE_HOME/bin
-
 # build ohara
 ARG BRANCH="master"
 ARG COMMIT=$BRANCH
