@@ -42,13 +42,17 @@ private String exec(String[] args) {
 
 import org.apache.tools.ant.taskdefs.condition.Os
 private String whoami() {
-  if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    def fullName = exec("whoami")
-    def backslash = fullName.lastIndexOf("\\")
-    if (backslash == -1) return fullName
-    else fullName.substring(backslash + 1)
+  try {
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+      def fullName = exec("whoami")
+      def backslash = fullName.lastIndexOf("\\")
+      if (backslash == -1) return fullName
+      else fullName.substring(backslash + 1)
+    }
+    else return exec("whoami")
+  } catch (Throwable ignored) {
+    return "Unknown"
   }
-  else return exec("whoami")
 }
 
 private String user() {

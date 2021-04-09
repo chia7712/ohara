@@ -63,7 +63,7 @@ license {
   strictCheck true
   // VersionUtils.java is generated at runtime and its source code isn't public. Hence, we don't add header to it.
   excludes(["**/VersionUtils.java",
-            ".gradle",
+            "**/.gradle",
             ".git",
             ".idea",
             "**/target",
@@ -320,6 +320,7 @@ subprojects {
           include '**/*.java'
           // VersionUtils is a generated class
           exclude '**/VersionUtils.java'
+          exclude '**/.gradle'
         }
         googleJavaFormat()
         removeUnusedImports()
