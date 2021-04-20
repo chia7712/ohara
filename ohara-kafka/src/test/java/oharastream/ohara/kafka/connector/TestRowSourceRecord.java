@@ -170,7 +170,6 @@ public class TestRowSourceRecord extends OharaTest {
             1,
             2,
             3,
-            4L,
             5,
             6);
     // snapshot the cache and then generate fake records
