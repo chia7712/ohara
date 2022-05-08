@@ -1,0 +1,166 @@
+/*
+ * Copyright 2019 is-land
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "$rootDir/gradle/dependencies.gradle"
+
+dependencies {
+  implementation libs.slf4jApi
+  implementation libs.slf4jLog4j
+  implementation libs.jacksonAnnotations
+  implementation libs.guava
+  implementation libs.kafkaConnectJson
+  testImplementation libs.mockitoAll
+  testImplementation libs.junitApi
+  testRuntimeOnly libs.junitEngine
+}
+
+private String exec(String[] args) {
+  def stdout = new ByteArrayOutputStream()
+  exec {
+    commandLine args
+    standardOutput = stdout
+  }
+  // If the shell is wrapped by cygwin, the line separator is changed to \n...
+  // Hence, checking the separator manually is more suitable in this case
+  def s = stdout.toString()
+  if (s.contains("\r\n")) return s.replaceAll("\r\n", "")
+  return s.replaceAll("\n", "")
+}
+
+import org.apache.tools.ant.taskdefs.condition.Os
+private String whoami() {
+  try {
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+      def fullName = exec("whoami")
+      def backslash = fullName.lastIndexOf("\\")
+      if (backslash == -1) return fullName
+      else fullName.substring(backslash + 1)
+    }
+    else return exec("whoami")
+  } catch (Throwable ignored) {
+    return "Unknown"
+  }
+}
+
+private String user() {
+  try {
+    return exec("git", "config", "user.name")
+  } catch (Throwable ignored) {
+    // if git's user is not set, git will return exit code 1
+    return whoami()
+  }
+}
+
+private String revision() {
+  try {
+    return exec("git", "log", "-1", "--pretty=format:%H")
+  } catch (Throwable ignored) {
+    // if git's user is not set, git will return exit code 1
+    return "Unknown"
+  }
+}
+
+private static String date() {
+  return new Date().format('yyyy-MM-dd HH:mm:ss')
+}
+
+private static String versionInJson(String version, String revision, String branch, String user, String date) {
+  return """{\"version\":\"$version\",\"revision\":\"$revision\",\"branch\":\"$branch\",\"user\":\"$user\",\"date\":\"$date\"}"""
+}
+
+private String version() {
+  // Jenkins, sometimes, has to build temporary images, which have specific tag, to run IT tests.
+  // and all tests in IT have to use the temporary images.
+  if(project.hasProperty("ohara.version") && !project.getProperty("ohara.version").toString().isEmpty())
+    return project.getProperty("ohara.version").toString();
+  return project.version.toString();
+}
+
+task versionFile {
+  doLast {
+    def folder = new File("$projectDir" + "/build/generated")
+    if (!folder.exists() && !folder.mkdirs())
+      throw new GradleScriptException("failed to create folder on ${folder.toString()}", null)
+    if (!folder.isDirectory())
+      throw new GradleScriptException("$folder is not folder", null)
+    def file = new File(folder, "ohara_version")
+    if (file.exists()) file.delete()
+    String versionJson = versionInJson(
+            version(),
+            revision(),
+            project.branch.toString(),
+            user(),
+            date()
+    )
+    def writer = new FileWriter(file)
+    try {
+      writer.write(versionJson.replaceAll("\n", System.lineSeparator()))
+    } finally {
+      writer.close()
+    }
+  }
+}
+
+task initializer {
+  doLast {
+    def customVersion = version()
+    def file = new File("$projectDir" + "/src/main/java/oharastream/ohara/common/util/VersionUtils.java")
+    if (file.exists()) file.delete()
+    // the date is not idempotent so we have to store it.
+    // Otherwise, the value of date will be different in different usage.
+    String dateString = date()
+    String versionJson = versionInJson(
+      customVersion,
+      revision(),
+      project.branch.toString(),
+      user(),
+      dateString
+    )
+    String code = """package oharastream.ohara.common.util;
+// DON'T touch this file!!! It is generated dynamically. see ohara-common/build.gradle
+public final class VersionUtils {
+  public static final String VERSION = \"$customVersion\";
+  public static final String BRANCH = \"${project.branch}\";
+  public static final String USER = \"${user()}\";
+  public static final String REVISION = \"${revision()}\";
+  public static final String DATE = \"${dateString}\";
+
+  public static String jsonString() {
+    return \"${versionJson.replaceAll("\"", "\\\\\"")}\";
+  }
+
+  public static void main(String[] args) {
+    System.out.println(jsonString());
+  }
+
+  private VersionUtils() {}
+}
+"""
+    def writer = new FileWriter(file)
+    try {
+      writer.write(code.replaceAll("\n", System.lineSeparator()))
+    } finally {
+      writer.close()
+    }
+  }
+}
+
+/**
+ * Generating VersionUtils must run before compileJava.
+ */
+tasks.matching { it.name != 'initializer' && it.name == "compileJava"}.all { Task task ->
+  task.dependsOn initializer
+}

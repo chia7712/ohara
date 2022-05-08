@@ -1,0 +1,66 @@
+/*
+ * Copyright 2019 is-land
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "$rootDir/gradle/dependencies.gradle"
+apply plugin: 'java-library-distribution'
+
+dependencies {
+  implementation project(':ohara-common')
+  implementation project(':ohara-kafka')
+  implementation project(':ohara-metrics')
+  implementation libs.scalaJava8Compat
+  implementation libs.scalaLibrary
+  implementation libs.scalaReflect
+  implementation libs.scalaLogging
+  implementation libs.slf4jApi
+  implementation libs.slf4jLog4j
+  implementation libs.akkaStream
+  implementation libs.akkaHttp
+  implementation libs.akkaHttpSprayJson
+  implementation libs.guava
+
+  testImplementation project(path: ':ohara-common', configuration: 'testRuntime')
+  testImplementation project(':ohara-kafka')
+  testImplementation project(':ohara-testing-util')
+  testImplementation project(':ohara-testing-util').sourceSets.test.output
+  testImplementation libs.akkaTestKit
+  testImplementation libs.akkaHttpSprayJson
+  testImplementation libs.akkaHttpTestKit
+  testImplementation libs.scalatest
+  testImplementation libs.mockitoAll
+  testImplementation libs.junitApi
+  testRuntimeOnly libs.junitEngine
+}
+
+
+distributions {
+  main {
+//    baseName = "ohara"
+    contents {
+      into("bin") {
+        // ref to root module
+        from { "$projectDir/../bin" }
+        fileMode 0755
+      }
+      into("conf") {
+        from { "$projectDir/src/main/resources" }
+      }
+      into("lib") {
+        from { "$projectDir/build/libs/ohara-shabondi-${version}.jar" }
+      }
+    }
+  }
+}

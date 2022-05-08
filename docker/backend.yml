@@ -1,0 +1,77 @@
+#
+# Copyright 2019 is-land
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+version: '3.3'
+services:
+
+  configurator:
+    image: oharastream/configurator:${TAG:-0.13.0-SNAPSHOT}
+    hostname: configurator
+    command: ["--port", "12345"]
+    ports:
+      - 12345:12345
+#    see readme for more details
+#    environment:
+#      - JMX_PORT=9999
+#      - JMX_HOSTNAME="your hostname"
+    # You have got to specify hostname mappings in order to enable configurator to connect to other nodes which are not hosted by docker-compose
+#    extra_hosts:
+#      - "node00:192.168.56.200"
+#      - "node01:192.168.56.201"
+#      - "node02:192.168.56.202"
+
+  ftp:
+    image: oharastream/backend:${TAG:-0.13.0-SNAPSHOT}
+    hostname: ftp
+    command: ["oharastream.ohara.testing.service.FtpServer",
+              "--homeFolder", "/tmp/ohara_ftpserver",
+              "--controlPort", "10000",
+              "--dataPorts", "10001-10005",
+              "--user", "user",
+              "--password", "password"]
+    ports:
+      - 10000:10000
+      - 10001:10001
+      - 10002:10002
+      - 10003:10003
+      - 10004:10004
+      - 10005:10005
+
+  postgresql:
+    image: islandsystems/postgresql:${TAG:-9.2.24}
+    hostname: postgresql
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-ohara}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-ohara}
+    ports:
+      - 20000:5432
+
+  samba:
+    image: dperson/samba:${SMB_IMAGE_TAG:-latest}
+    command: >
+      -u "${SMB_USER:-user};${SMB_PASSWORD:-password}"
+      -s "${SMB_USER:-user};/tmp/;yes;no;no;all;${SMB_USER:-user};${SMB_USER:-user}"
+    # You can replace the necessary port for SMB by parameters：
+    # - SMB_NS_PORT: NETBIOS Name Service, default 137
+    # - SMB_DGM_PORT: NETBIOS Datagram Service, default 138
+    # - SMB_SSN_PORT: NETBIOS Session Service, default 139
+    # - SMB_DS_PORT: Active Directory, default 445
+    ports:
+      - "${SMB_NS_PORT:-137}:137/udp"
+      - "${SMB_DGM_PORT:-138}:138/udp"
+      - "${SMB_SSN_PORT:-139}:139/tcp"
+      - "${SMB_DS_PORT:-445}:445/tcp"

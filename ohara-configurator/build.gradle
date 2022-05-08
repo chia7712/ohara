@@ -1,0 +1,94 @@
+import java.util.stream.Collectors
+import java.util.stream.StreamSupport
+
+/*
+ * Copyright 2019 is-land
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "$rootDir/gradle/dependencies.gradle"
+apply plugin: 'java-library-distribution'
+apply plugin: 'application'
+
+dependencies {
+  implementation project(':ohara-agent')
+  implementation project(':ohara-client')
+  implementation project(':ohara-common')
+  implementation project(':ohara-connector')
+  implementation project(':ohara-kafka')
+  implementation project(":ohara-stream")
+  implementation project(":ohara-shabondi")
+  implementation project(":ohara-metrics")
+  implementation libs.reflections
+  implementation libs.rocksDBJni
+  implementation libs.scalaJava8Compat
+  implementation libs.scalaLibrary
+  implementation libs.scalaReflect
+  implementation libs.scalaLogging
+  implementation libs.kafkaClient
+  implementation libs.kafkaConnectFile
+  implementation libs.kafkaConnectRuntime
+  implementation libs.kafkaStreams
+  implementation libs.slf4jApi
+  implementation libs.slf4jLog4j
+  implementation libs.akkaStream
+  implementation libs.akkaHttpSprayJson
+  // some tests demand the connector implementation
+  // DON'T import ohara-connecor into implementation scope!
+  testImplementation project(':ohara-connector')
+  testImplementation project(':ohara-testing-util')
+  testImplementation project(path: ':ohara-testing-util', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-common', configuration: 'testRuntime')
+  testImplementation libs.scalatest
+  testImplementation libs.mockitoAll
+  testImplementation libs.junitApi
+  testRuntimeOnly libs.junitEngine
+}
+
+application {
+  applicationDefaultJvmArgs = ["-Dlog4j.configuration=file:../conf/log4j.properties"]
+  mainClassName = 'oharastream.ohara.configurator.Configurator'
+}
+
+// this testing jar is useful in testing route
+test.dependsOn(':ohara-stream:streamJar')
+// we use the dumb connector to test FileInfoRoute
+test.dependsOn(':ohara-kafka:testJar')
+
+distZip {
+  duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
+distTar {
+  duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
+distributions {
+  main {
+    contents {
+      into("conf") {
+        // ref to root module
+        from { "$projectDir/src/main/resources" }
+      }
+      into("bin") {
+        // ref to root module
+        from { "$projectDir/../bin" }
+        fileMode 0755
+      }
+      into('lib') {
+        from(jar)
+      }
+    }
+  }
+}

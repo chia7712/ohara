@@ -1,0 +1,126 @@
+/*
+ * Copyright 2019 is-land
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "$rootDir/gradle/dependencies.gradle"
+
+/**
+ * Noted: this module should NOT have any production code!!! by chia
+ */
+dependencies {
+  implementation project(':ohara-common')
+  implementation project(':ohara-client')
+  implementation project(':ohara-kafka')
+  implementation project(':ohara-configurator')
+  implementation project(':ohara-connector')
+  implementation project(':ohara-agent')
+  implementation project(':ohara-testing-util')
+  implementation project(':ohara-metrics')
+  implementation project(':ohara-stream')
+  implementation project(':ohara-shabondi')
+  implementation libs.scalaJava8Compat
+  implementation libs.scalaLibrary
+  implementation libs.scalaReflect
+  implementation libs.scalaLogging
+  implementation libs.kafkaConnectRuntime
+  testImplementation libs.scalaLogging
+  testImplementation libs.akkaHttpSprayJson
+  // our it env use postgresql
+  testImplementation libs.postgresql
+
+  /**
+   * Jar conflict between Hadoop & Kafka:
+   *    * Jersey: Hadoop use jersey 1.x, Kafka use jersey 2.x
+   *        * Solve running Kafka Connect mini cluster failed. OHARA-103
+   *    * Jetty: Hadoop use org.mortbay.jetty 6.1.x, Kafka use use newer version(org.eclipse.jetty)
+   *        * Exclude older release.
+   *    * Zookeeper: Hadoop use Zookeeper 3.4.6, Kafka use newer version
+   *        * Exclude older release.
+   */
+  testImplementation(libs.hadoopCommon) {
+    exclude group: 'com.sun.jersey', module: 'jersey-core'
+    exclude group: 'com.sun.jersey', module: 'jersey-json'
+    exclude group: 'com.sun.jersey', module: 'jersey-servlet'
+    exclude group: 'com.sun.jersey', module: 'jersey-server'
+    exclude group: 'org.mortbay.jetty', module: 'jetty'
+    exclude group: 'org.mortbay.jetty', module: 'jetty-util'
+    exclude group: 'org.apache.zookeeper', module: 'zookeeper'
+  }
+  testImplementation (libs.hadoopHDFS) {
+    exclude group: 'com.sun.jersey', module: 'jersey-core'
+    exclude group: 'com.sun.jersey', module: 'jersey-json'
+    exclude group: 'com.sun.jersey', module: 'jersey-servlet'
+    exclude group: 'com.sun.jersey', module: 'jersey-server'
+    exclude group: 'org.mortbay.jetty', module: 'jetty'
+    exclude group: 'org.mortbay.jetty', module: 'jetty-util'
+  }
+  testImplementation project(path: ':ohara-agent', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-client', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-common', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-configurator', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-connector', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-kafka', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-metrics', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-shabondi', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-stream', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-testing-util', configuration: 'testRuntime')
+  testImplementation libs.akkaTestKit
+  testImplementation libs.akkaHttpTestKit
+  testImplementation libs.scalatest
+  testImplementation libs.junitApi
+  testRuntimeOnly libs.junitEngine
+  testImplementation libs.junitParams
+  testImplementation libs.akkaStream
+
+  if (project.hasProperty("ohara.it.jar.folder")) {
+    // Load jar file for JDBC driver test
+    fileTree(project.getProperty("ohara.it.jar.folder")).visit { FileVisitDetails jar ->
+      testImplementation files(jar.file.path)
+    }
+  }
+}
+
+/**
+ * package only stream jar.
+ */
+task streamJar(type: Jar, dependsOn: compileJava) {
+  from sourceSets.main.output
+  include '**/DumbStream**.class'
+  archiveName "ohara-it-stream.jar"
+}
+
+/**
+ * package only source connector.
+ */
+task sourceJar(type: Jar, dependsOn: compileJava) {
+  from sourceSets.main.output
+  include '**/connector/*Source*.class', "**/connector/package*.class"
+  archiveName "ohara-it-source.jar"
+}
+
+/**
+ * package only sink connector.
+ */
+task sinkJar(type: Jar, dependsOn: compileJava) {
+  from sourceSets.main.output
+  include '**/connector/*Sink*.class', "**/connector/package*.class"
+  archiveName "ohara-it-sink.jar"
+}
+
+jar {
+  dependsOn sourceJar
+  dependsOn sinkJar
+  dependsOn streamJar
+}

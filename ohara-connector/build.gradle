@@ -1,0 +1,72 @@
+/*
+ * Copyright 2019 is-land
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "$rootDir/gradle/dependencies.gradle"
+apply plugin: 'java-library-distribution'
+
+// TODO: Why we set the time zone in testing??? We can get the system timezone through Calendar.getInstance().getTimeZone... by chia
+test.systemProperty("user.timezone", "Asia/Taipei")
+
+dependencies {
+  implementation project(':ohara-common')
+  implementation project(':ohara-client')
+  implementation project(':ohara-kafka')
+  implementation project(':ohara-metrics')
+  implementation libs.scalaJava8Compat
+  implementation libs.scalaLibrary
+  implementation libs.scalaReflect
+  implementation libs.scalaLogging
+  implementation libs.slf4jApi
+  implementation libs.slf4jLog4j
+  implementation libs.akkaHttpSprayJson
+  implementation libs.akkaStream
+  implementation libs.kafkaConnectRuntime
+  testImplementation project(":ohara-testing-util")
+  testImplementation project(path: ':ohara-common', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-kafka', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-testing-util', configuration: 'testRuntime')
+  testImplementation libs.scalatest
+  testImplementation libs.mockitoAll
+  testImplementation libs.junitApi
+  testRuntimeOnly libs.junitEngine
+  testImplementation libs.junitParams
+}
+
+assemble.dependsOn(':ohara-common:versionFile')
+
+distributions {
+  main {
+//    baseName = "ohara"
+    contents {
+      into("conf") {
+        // ref to root module
+        from { "$projectDir/../conf" }
+      }
+      into("bin") {
+        from { "$projectDir/../ohara-common/build/generated/ohara_version" }
+      }
+      into("bin") {
+        // ref to root module
+        from { "$projectDir/../bin" }
+        fileMode 0755
+      }
+
+      into("lib") {
+        from { "$projectDir/build/libs/ohara-connector-${version}.jar" }
+      }
+    }
+  }
+}

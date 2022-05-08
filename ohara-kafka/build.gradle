@@ -1,0 +1,53 @@
+/*
+ * Copyright 2019 is-land
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "$rootDir/gradle/dependencies.gradle"
+dependencies {
+  implementation project(':ohara-common')
+  implementation project(':ohara-metrics')
+  implementation libs.commonLang3
+  implementation libs.guava
+  implementation libs.kafkaClient
+  implementation libs.kafkaConnectFile
+  implementation libs.kafkaConnectRuntime
+  implementation libs.slf4jApi
+  implementation libs.slf4jLog4j
+
+  /**
+   * Jar conflict between Hadoop & Kafka:
+   *    * Jersey: Hadoop use jersey 1.x, Kafka use jersey 2.x
+   *        * Solve running Kafka Connect mini cluster failed. OHARA-103
+   *    * Jetty: Hadoop use org.mortbay.jetty 6.1.x, Kafka use use newer version(org.eclipse.jetty)
+   *        * Exclude older release.
+   *    * Zookeeper: Hadoop use Zookeeper 3.4.6, Kafka use newer version
+   *        * Exclude older release.
+   */
+  testImplementation(libs.hadoopHDFS) {
+    exclude group: 'com.sun.jersey', module: 'jersey-core'
+    exclude group: 'com.sun.jersey', module: 'jersey-json'
+    exclude group: 'com.sun.jersey', module: 'jersey-servlet'
+    exclude group: 'com.sun.jersey', module: 'jersey-server'
+    exclude group: 'org.mortbay.jetty', module: 'jetty'
+    exclude group: 'org.mortbay.jetty', module: 'jetty-util'
+  }
+  testImplementation project(':ohara-testing-util')
+  testImplementation project(path: ':ohara-testing-util', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-common', configuration: 'testRuntime')
+  testImplementation libs.mockitoAll
+  testImplementation libs.junitApi
+  testRuntimeOnly libs.junitEngine
+}
+
