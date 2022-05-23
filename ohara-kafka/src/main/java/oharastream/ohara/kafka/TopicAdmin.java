@@ -324,7 +324,7 @@ public interface TopicAdmin extends Releasable {
                     CompletableFuture<Boolean> f2 = new CompletableFuture<>();
                     admin
                         .deleteTopics(List.of(key.topicNameOnKafka()))
-                        .values()
+                        .topicNameValues()
                         .get(key.topicNameOnKafka())
                         .whenComplete(
                             (v, exception) -> {

@@ -39,7 +39,6 @@ public class TestRecordMetadata extends OharaTest {
                 0,
                 offset,
                 timestamp,
-                10L,
                 serializedKeySize,
                 serializedValueSize));
     Assertions.assertEquals(topicKey, record.topicKey());

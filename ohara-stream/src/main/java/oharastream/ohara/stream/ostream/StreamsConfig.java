@@ -44,7 +44,7 @@ class StreamsConfig {
   static final String TASK_IDLE_MS = org.apache.kafka.streams.StreamsConfig.MAX_TASK_IDLE_MS_CONFIG;
 
   enum GUARANTEES {
-    EXACTLY_ONCE(org.apache.kafka.streams.StreamsConfig.EXACTLY_ONCE),
+    EXACTLY_ONCE(org.apache.kafka.streams.StreamsConfig.EXACTLY_ONCE_V2),
     AT_LEAST_ONCE(org.apache.kafka.streams.StreamsConfig.AT_LEAST_ONCE);
 
     private final String actualName;
