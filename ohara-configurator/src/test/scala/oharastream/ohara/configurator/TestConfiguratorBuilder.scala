@@ -174,7 +174,7 @@ class TestConfiguratorBuilder extends OharaTest {
                                     |        "containers": [
                                     |          {
                                     |            "name": "ohara",
-                                    |            "image": "oharastream/broker:${VersionUtils.VERSION}",
+                                    |            "image": "ghcr.io/skiptests/ohara/broker:${VersionUtils.VERSION}",
                                     |            "ports": [
                                     |              {
                                     |                "hostPort": 43507,

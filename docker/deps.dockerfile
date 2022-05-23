@@ -34,7 +34,7 @@ RUN yum install -y \
 # build ohara
 ARG BRANCH="master"
 ARG COMMIT=$BRANCH
-ARG REPO="https://github.com/oharastream/ohara.git"
+ARG REPO="https://github.com/skiptests/ohara.git"
 WORKDIR /ohara
 RUN git clone $REPO /ohara
 RUN git checkout $COMMIT

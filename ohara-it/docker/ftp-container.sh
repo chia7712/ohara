@@ -146,7 +146,7 @@ then
   volumeArg="-v ${volume}:/home/ohara/ftp-data"
 fi
 
-ftpDockerImageName="oharastream/ohara:ftp"
+ftpDockerImageName="ghcr.io/skiptests/ohara/ftp"
 if [[ "${start}" == "true" ]];
 then
   echo "Pull FTP server docker image"

@@ -59,7 +59,7 @@ ENV PATH=$PATH:$FTPSERVER_HOME/bin
 RUN chmod +x /home/$USER/default/bin/ftp.sh
 
 # copy Tini
-COPY --from=oharastream/ohara:deps /tini /tini
+COPY --from=ghcr.io/skiptests/ohara/deps /tini /tini
 RUN chmod +x /tini
 
 USER $USER

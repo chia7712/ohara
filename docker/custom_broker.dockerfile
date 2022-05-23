@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-ARG BUILD_OS=oharastream/ohara:deps
+ARG BUILD_OS=ghcr.io/skiptests/ohara/deps
 ARG RUNTIME_OS=azul/zulu-openjdk:11
 FROM $BUILD_OS as deps
 
@@ -39,7 +39,7 @@ RUN cp /version $(find "${KAFKA_DIR}" -maxdepth 1 -type d -name "kafka_*")/bin/b
 # clone ohara
 ARG BRANCH="master"
 ARG COMMIT=$BRANCH
-ARG REPO="https://github.com/oharastream/ohara.git"
+ARG REPO="https://github.com/skiptests/ohara.git"
 WORKDIR /testpatch/ohara
 RUN git clone $REPO /testpatch/ohara
 RUN git checkout $COMMIT
@@ -63,7 +63,7 @@ ENV KAFKA_HOME=/home/$USER/default
 ENV PATH=$PATH:$KAFKA_HOME/bin
 
 # copy Tini
-COPY --from=oharastream/ohara:deps /tini /tini
+COPY --from=ghcr.io/skiptests/ohara/deps /tini /tini
 RUN chmod +x /tini
 
 USER $USER

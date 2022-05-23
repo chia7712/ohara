@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-FROM oharastream/ohara:deps as deps
+FROM ghcr.io/skiptests/ohara/deps as deps
 
 # add label to intermediate image so jenkins can find out this one to remove
 ARG STAGE="intermediate"
@@ -34,7 +34,7 @@ RUN echo "$KAFKA_VERSION" > $(find "${KAFKA_DIR}" -maxdepth 1 -type d -name "kaf
 # build ohara
 ARG BRANCH="master"
 ARG COMMIT=$BRANCH
-ARG REPO="https://github.com/oharastream/ohara.git"
+ARG REPO="https://github.com/skiptests/ohara.git"
 ARG BEFORE_BUILD=""
 WORKDIR /testpatch/ohara
 RUN git clone $REPO /testpatch/ohara

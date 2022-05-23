@@ -63,7 +63,7 @@ object WorkerApi {
   /**
     * the default docker image used to run containers of worker cluster
     */
-  val IMAGE_NAME_DEFAULT: String = s"oharastream/connect-worker:${VersionUtils.VERSION}"
+  val IMAGE_NAME_DEFAULT: String = s"ghcr.io/skiptests/ohara/connect-worker:${VersionUtils.VERSION}"
   val BROKER_CLUSTER_KEY_KEY     = "brokerClusterKey"
   val PLUGIN_KEYS_KEY            = "pluginKeys"
 

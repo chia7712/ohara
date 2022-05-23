@@ -25,7 +25,7 @@ COPY samba.sh /usr/sbin
 RUN chmod +x /usr/sbin/samba.sh
 
 # copy Tini
-COPY --from=oharastream/ohara:deps /tini /tini
+COPY --from=ghcr.io/skiptests/ohara/deps /tini /tini
 RUN chmod +x /tini
 
 ENTRYPOINT ["/tini", "--", "samba.sh"]

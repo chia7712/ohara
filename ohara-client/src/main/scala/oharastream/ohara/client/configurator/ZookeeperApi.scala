@@ -34,7 +34,7 @@ object ZookeeperApi {
   /**
     * the default docker image used to run containers of worker cluster
     */
-  val IMAGE_NAME_DEFAULT: String = s"oharastream/zookeeper:${VersionUtils.VERSION}"
+  val IMAGE_NAME_DEFAULT: String = s"ghcr.io/skiptests/ohara/zookeeper:${VersionUtils.VERSION}"
 
   val PEER_PORT_KEY          = "peerPort"
   val ELECTION_PORT_KEY      = "electionPort"
