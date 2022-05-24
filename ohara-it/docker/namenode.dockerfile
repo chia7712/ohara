@@ -14,16 +14,13 @@
 # limitations under the License.
 #
 
-FROM centos:7.7.1908 as deps
+FROM ubuntu:22.04 as deps
 
 # install tools
-RUN yum install -y \
+RUN apt-get update && apt-get install -y \
   wget \
   net-tools \
   git
-
-# export JAVA_HOME
-ENV JAVA_HOME=/usr/lib/jvm/jre
 
 # download hadoop.tar.gz file
 ARG HADOOP_DIR=/opt/hadoop
@@ -35,13 +32,11 @@ RUN rm -f hadoop-${HADOOP_VERSION}.tar.gz
 
 # set environment variable
 
-FROM centos:7.7.1908
+FROM ubuntu:22.04
 
-RUN yum install -y \
-  java-11-openjdk \
+RUN apt-get update && apt-get install -y \
+  openjdk-11-jdk \
   which
-
-ENV JAVA_HOME=/usr/lib/jvm/jre
 
 # change user from root to ohara
 ARG USER=ohara

@@ -37,7 +37,7 @@ RUN tar -zxvf $(find ./core/build/distributions/ -maxdepth 1 -type f -name "kafk
 RUN cp /version $(find "${KAFKA_DIR}" -maxdepth 1 -type d -name "kafka_*")/bin/broker_version
 
 # clone ohara
-ARG BRANCH="master"
+ARG BRANCH="main"
 ARG COMMIT=$BRANCH
 ARG REPO="https://github.com/skiptests/ohara.git"
 WORKDIR /testpatch/ohara

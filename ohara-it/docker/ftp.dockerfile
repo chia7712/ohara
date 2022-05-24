@@ -14,15 +14,12 @@
 # limitations under the License.
 #
 
-FROM centos:7.7.1908 as deps
+FROM ubuntu:22.04 as deps
 
 # install tools
-RUN yum install -y \
+RUN apt-get update && apt-get install -y \
   wget \
   net-tools
-
-# export JAVA_HOME
-ENV JAVA_HOME=/usr/lib/jvm/jre
 
 # download ftpserver.tar.gz file
 ARG FTPSERVER_DIR=/opt/ftpserver
@@ -32,13 +29,11 @@ RUN mkdir ${FTPSERVER_DIR}
 RUN tar -zxvf apache-ftpserver-${FTPSERVER_VERSION}.tar.gz -C ${FTPSERVER_DIR}
 RUN rm -f apache-ftpserver-${FTPSERVER_VERSION}.tar.gz
 
-FROM centos:7.7.1908
+FROM ubuntu:22.04
 
-RUN yum install -y \
-  java-11-openjdk \
+RUN apt-get update && apt-get install -y \
+  openjdk-11-jdk \
   which
-
-ENV JAVA_HOME=/usr/lib/jvm/jre
 
 # change user from root to ohara
 ARG USER=ohara

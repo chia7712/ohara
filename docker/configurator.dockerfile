@@ -20,11 +20,11 @@ FROM ghcr.io/skiptests/ohara/deps as deps
 ARG STAGE="intermediate"
 LABEL stage=$STAGE
 
-ARG BRANCH="master"
+ARG BRANCH="main"
 ARG COMMIT=$BRANCH
 ARG REPO="https://github.com/skiptests/ohara.git"
 ARG BEFORE_BUILD=""
-ARG KAFKA_VERSION=2.8.0
+ARG KAFKA_VERSION=3.1.1
 ARG SCALA_VERSION=2.13.3
 # this argument is used to change default version of services
 ARG OHARA_VERSION=""
@@ -33,21 +33,16 @@ RUN git clone $REPO /testpatch/ohara
 RUN git checkout $COMMIT
 RUN if [[ "$BEFORE_BUILD" != "" ]]; then /bin/bash -c "$BEFORE_BUILD" ; fi
 RUN ./gradlew clean ohara-configurator:build -x test \
-  -PskipManager \
   -Pkafka.version=$KAFKA_VERSION \
   -Pscala.version=$SCALA_VERSION \
   -Pohara.version=$OHARA_VERSION
 RUN mkdir /opt/ohara
 RUN tar -xvf $(find "/testpatch/ohara/ohara-configurator/build/distributions" -maxdepth 1 -type f -name "*.tar") -C /opt/ohara/
 
-FROM centos:7.7.1908
+FROM ubuntu:22.04
 
 # install tools
-RUN yum install -y \
-  java-11-openjdk
-
-# export JAVA_HOME
-ENV JAVA_HOME=/usr/lib/jvm/jre
+RUN apt-get update && apt-get install -y openjdk-11-jdk
 
 # add user
 ARG USER=ohara

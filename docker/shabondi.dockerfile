@@ -20,7 +20,7 @@ FROM ghcr.io/skiptests/ohara/deps as deps
 ARG STAGE="intermediate"
 LABEL stage=$STAGE
 
-ARG BRANCH="master"
+ARG BRANCH="main"
 ARG COMMIT=$BRANCH
 ARG SCALA_VERSION=2.13.3
 ARG REPO="https://github.com/skiptests/ohara.git"
@@ -29,19 +29,15 @@ WORKDIR /testpatch/ohara
 RUN git clone $REPO /testpatch/ohara
 RUN git checkout $COMMIT
 RUN if [[ "$BEFORE_BUILD" != "" ]]; then /bin/bash -c "$BEFORE_BUILD" ; fi
-RUN ./gradlew clean build -x test -PskipManager  \
+RUN ./gradlew clean build -x test  \
   -Pscala.version=$SCALA_VERSION
 RUN mkdir /opt/ohara
 RUN tar -xvf $(find "/testpatch/ohara/ohara-shabondi/build/distributions" -maxdepth 1 -type f -name "*.tar") -C /opt/ohara/
 
-FROM centos:7.7.1908
+FROM ubuntu:22.04
 
 # install tools
-RUN yum install -y \
-  java-11-openjdk
-
-# export JAVA_HOME
-ENV JAVA_HOME=/usr/lib/jvm/jre
+RUN apt-get update && apt-get install -y openjdk-11-jdk
 
 # add user
 ARG USER=ohara

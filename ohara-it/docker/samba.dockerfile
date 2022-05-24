@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-FROM centos:7.7.1908
+FROM ubuntu:22.04
 
-RUN yum install -y \
+RUN apt-get update && apt-get install -y \
   samba \
   samba-client \
   samba-common

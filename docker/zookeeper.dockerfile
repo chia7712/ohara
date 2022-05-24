@@ -14,21 +14,19 @@
 # limitations under the License.
 #
 
-FROM centos:7.7.1908 as deps
+FROM ubuntu:22.04 as deps
 
 # add label to intermediate image so jenkins can find out this one to remove
 ARG STAGE="intermediate"
 LABEL stage=$STAGE
 
 # install tools
-RUN yum install -y \
-  wget \
-  git
+RUN apt-get update && apt-get install -y wget git
 
 # download zookeeper
 # WARN: Please don't change the value of ZOOKEEPER_DIR
 ARG ZOOKEEPER_DIR=/opt/zookeeper
-ARG ZOOKEEPER_VERSION=3.5.8
+ARG ZOOKEEPER_VERSION=3.7.0
 ARG MIRROR_SITE=https://archive.apache.org/dist
 RUN wget $MIRROR_SITE/zookeeper/zookeeper-${ZOOKEEPER_VERSION}/apache-zookeeper-${ZOOKEEPER_VERSION}-bin.tar.gz
 RUN mkdir ${ZOOKEEPER_DIR}
@@ -37,7 +35,7 @@ RUN rm -f apache-zookeeper-${ZOOKEEPER_VERSION}-bin.tar.gz
 RUN echo "$ZOOKEEPER_VERSION" > $(find "${ZOOKEEPER_DIR}" -maxdepth 1 -type d -name "apache-zookeeper-*")/bin/zookeeper_version
 
 # clone ohara
-ARG BRANCH="master"
+ARG BRANCH="main"
 ARG COMMIT=$BRANCH
 ARG REPO="https://github.com/skiptests/ohara.git"
 ARG BEFORE_BUILD=""
@@ -47,13 +45,10 @@ RUN git checkout $COMMIT
 RUN if [[ "$BEFORE_BUILD" != "" ]]; then /bin/bash -c "$BEFORE_BUILD" ; fi
 RUN git rev-parse HEAD > $(find "${ZOOKEEPER_DIR}" -maxdepth 1 -type d -name "apache-zookeeper-*")/bin/ohara_version
 
-FROM centos:7.7.1908
+FROM ubuntu:22.04
 
 # install tools
-RUN yum install -y \
-  java-11-openjdk
-
-ENV JAVA_HOME=/usr/lib/jvm/jre
+RUN apt-get update && apt-get install -y openjdk-11-jdk
 
 # change user
 ARG USER=ohara

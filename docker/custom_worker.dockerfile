@@ -37,14 +37,14 @@ RUN tar -zxvf $(find ./core/build/distributions/ -maxdepth 1 -type f -name "kafk
 RUN cp /version $(find "${KAFKA_DIR}" -maxdepth 1 -type d -name "kafka_*")/bin/worker_version
 
 # build ohara
-ARG BRANCH="master"
+ARG BRANCH="main"
 ARG COMMIT=$BRANCH
 ARG REPO="https://github.com/skiptests/ohara.git"
 WORKDIR /testpatch/ohara
 RUN git clone $REPO /testpatch/ohara
 RUN git checkout $COMMIT
 # we build ohara with specified version of kafka in order to keep the compatibility
-RUN ./gradlew clean ohara-connector:build -x test -PskipManager \
+RUN ./gradlew clean ohara-connector:build -x test \
   -Pkafka.version=$(cat /version) \
   -Pscala.version=$SCALA_VERSION
 RUN mkdir /opt/ohara

@@ -14,25 +14,21 @@
 # limitations under the License.
 #
 
-FROM centos:7.7.1908
+FROM ubuntu:22.04
 
 # install tools
-RUN yum install -y \
+RUN apt-get update && apt-get install -y \
   git \
-  java-11-openjdk-devel \
+  openjdk-11-jdk \
   wget \
-  unzip
-
-# export JAVA_HOME
-ENV JAVA_HOME=/usr/lib/jvm/java
-
-# install dependencies for mysql
-RUN yum install -y \
-  libaio \
-  numactl
+  unzip \
+  libaio1 \
+  numactl \
+  libncurses5 \
+  curl
 
 # build ohara
-ARG BRANCH="master"
+ARG BRANCH="main"
 ARG COMMIT=$BRANCH
 ARG REPO="https://github.com/skiptests/ohara.git"
 WORKDIR /ohara
@@ -41,7 +37,7 @@ RUN git checkout $COMMIT
 # download dependencies
 RUN ./gradlew clean build -x test
 # trigger download of database
-RUN ./gradlew cleanTest ohara-client:test --tests TestDatabaseClient -PskipManager
+RUN ./gradlew cleanTest ohara-client:test --tests TestDatabaseClient
 
 # Add Tini
 ARG TINI_VERSION=v0.18.0

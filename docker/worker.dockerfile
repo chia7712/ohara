@@ -23,7 +23,7 @@ LABEL stage=$STAGE
 # download kafka
 # WARN: Please don't change the value of KAFKA_DIR
 ARG KAFKA_DIR=/opt/kafka
-ARG KAFKA_VERSION=2.8.0
+ARG KAFKA_VERSION=3.1.1
 ARG SCALA_VERSION=2.13.3
 ARG MIRROR_SITE=https://archive.apache.org/dist
 RUN wget $MIRROR_SITE/kafka/${KAFKA_VERSION}/kafka_$(echo $SCALA_VERSION | cut -d. -f1-2)-${KAFKA_VERSION}.tgz
@@ -32,7 +32,7 @@ RUN tar -zxvf $(find ./ -maxdepth 1 -type f -name "kafka_*") -C ${KAFKA_DIR}
 RUN echo "$KAFKA_VERSION" > $(find "${KAFKA_DIR}" -maxdepth 1 -type d -name "kafka_*")/bin/worker_version
 
 # build ohara
-ARG BRANCH="master"
+ARG BRANCH="main"
 ARG COMMIT=$BRANCH
 ARG REPO="https://github.com/skiptests/ohara.git"
 ARG BEFORE_BUILD=""
@@ -41,7 +41,7 @@ RUN git clone $REPO /testpatch/ohara
 RUN git checkout $COMMIT
 RUN if [[ "$BEFORE_BUILD" != "" ]]; then /bin/bash -c "$BEFORE_BUILD" ; fi
 # we build ohara with specified version of kafka in order to keep the compatibility
-RUN ./gradlew clean ohara-connector:build -x test -PskipManager \
+RUN ./gradlew clean ohara-connector:build -x test \
   -Pkafka.version=$KAFKA_VERSION \
   -Pscala.version=$SCALA_VERSION
 RUN mkdir /opt/ohara
@@ -51,14 +51,12 @@ RUN cp $(find "/opt/ohara/" -maxdepth 1 -type d -name "ohara-*")/bin/ohara_versi
 # copy connector jars
 RUN cp $(find "/opt/ohara/" -maxdepth 1 -type d -name "ohara-*")/lib/* $(find "${KAFKA_DIR}" -maxdepth 1 -type d -name "kafka_*")/libs/
 
-FROM centos:7.7.1908
+FROM ubuntu:22.04
 
 # install tools
-RUN yum install -y \
-  java-11-openjdk \
+RUN apt-get update && apt-get install -y \
+  openjdk-11-jdk \
   wget # we use wget to download custom plugin from configurator
-
-ENV JAVA_HOME=/usr/lib/jvm/jre
 
 # change user from root to kafka
 ARG USER=ohara

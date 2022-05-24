@@ -14,21 +14,19 @@
 # limitations under the License.
 #
 
-FROM centos:7.7.1908 as deps
+FROM ubuntu:22.04 as deps
 
 # add label to intermediate image so jenkins can find out this one to remove
 ARG STAGE="intermediate"
 LABEL stage=$STAGE
 
 # install tools
-RUN yum install -y \
-  wget \
-  git
+RUN apt-get update && apt-get install -y wget git
 
 # download kafka
 # WARN: Please don't change the value of KAFKA_DIR
 ARG KAFKA_DIR=/opt/kafka
-ARG KAFKA_VERSION=2.8.0
+ARG KAFKA_VERSION=3.1.1
 ARG SCALA_VERSION=2.13.3
 ARG MIRROR_SITE=https://archive.apache.org/dist
 RUN wget $MIRROR_SITE/kafka/${KAFKA_VERSION}/kafka_$(echo $SCALA_VERSION | cut -d. -f1-2)-${KAFKA_VERSION}.tgz
@@ -37,7 +35,7 @@ RUN tar -zxvf $(find ./ -maxdepth 1 -type f -name "kafka_*") -C ${KAFKA_DIR}
 RUN echo "$KAFKA_VERSION" > $(find "${KAFKA_DIR}" -maxdepth 1 -type d -name "kafka_*")/bin/broker_version
 
 # clone ohara
-ARG BRANCH="master"
+ARG BRANCH="main"
 ARG COMMIT=$BRANCH
 ARG REPO="https://github.com/skiptests/ohara.git"
 ARG BEFORE_BUILD=""
@@ -47,12 +45,9 @@ RUN git checkout $COMMIT
 RUN if [[ "$BEFORE_BUILD" != "" ]]; then /bin/bash -c "$BEFORE_BUILD" ; fi
 RUN git rev-parse HEAD > $(find "${KAFKA_DIR}" -maxdepth 1 -type d -name "kafka_*")/bin/ohara_version
 
-FROM centos:7.7.1908
+FROM ubuntu:22.04
 
-RUN yum install -y \
-  java-11-openjdk
-
-ENV JAVA_HOME=/usr/lib/jvm/jre
+RUN apt-get update && apt-get install -y openjdk-11-jdk
 
 # change user from root to kafka
 ARG USER=ohara
