@@ -51,12 +51,16 @@ public class TopicMeter {
     BytesInPerSec,
     BytesOutPerSec,
     BytesRejectedPerSec,
+    ReplicationBytesInPerSec,
+    ReplicationBytesOutPerSec,
     FailedProduceRequestsPerSec,
     FailedFetchRequestsPerSec,
     TotalProduceRequestsPerSec,
     TotalFetchRequestsPerSec,
     FetchMessageConversionsPerSec,
-    ProduceMessageConversionsPerSec
+    ProduceMessageConversionsPerSec,
+    ReassignmentBytesInPerSec,
+    ReassignmentBytesOutPerSec
   }
 
   public static boolean is(BeanObject obj) {

@@ -328,17 +328,56 @@ trait Collie {
                 hostname -> meters.groupBy(_.topicName()).flatMap {
                   case (plainName, meters) =>
                     val key = ObjectKey.ofPlain(plainName)
-                    if (key.isPresent) Some(key.get() -> Metrics(meters.map { meter =>
-                      Meter(
+                    if (key.isPresent) Some(key.get() -> Metrics(meters.flatMap { meter =>
+                      Seq(Meter(
                         name = meter.catalog().name(),
                         value = meter.count().toDouble,
-                        unit = s"${meter.eventType()} / ${meter.rateUnit().name()}",
-                        document = meter.catalog.name(),
+                        unit = s"${meter.eventType()}",
+                        document = "count",
                         queryTime = meter.queryTime(),
                         startTime = None,
                         lastModified = None,
                         valueInPerSec = None
-                      )
+                      ),
+                        Meter(
+                          name = meter.catalog().name(),
+                          value = meter.oneMinuteRate(),
+                          unit = s"${meter.eventType()} / ${meter.rateUnit().name()}",
+                          document = "oneMinuteRate",
+                          queryTime = meter.queryTime(),
+                          startTime = None,
+                          lastModified = None,
+                          valueInPerSec = None
+                        ),
+                        Meter(
+                          name = meter.catalog().name(),
+                          value = meter.fifteenMinuteRate(),
+                          unit = s"${meter.eventType()} / ${meter.rateUnit().name()}",
+                          document = "fifteenMinuteRate",
+                          queryTime = meter.queryTime(),
+                          startTime = None,
+                          lastModified = None,
+                          valueInPerSec = None
+                        ),
+                        Meter(
+                          name = meter.catalog().name(),
+                          value = meter.fiveMinuteRate(),
+                          unit = s"${meter.eventType()} / ${meter.rateUnit().name()}",
+                          document = "fiveMinuteRate",
+                          queryTime = meter.queryTime(),
+                          startTime = None,
+                          lastModified = None,
+                          valueInPerSec = None
+                        ),Meter(
+                          name = meter.catalog().name(),
+                          value = meter.meanRate(),
+                          unit = s"${meter.eventType()} / ${meter.rateUnit().name()}",
+                          document = "meanRate",
+                          queryTime = meter.queryTime(),
+                          startTime = None,
+                          lastModified = None,
+                          valueInPerSec = None
+                        ))
                     }))
                     else None
                 }

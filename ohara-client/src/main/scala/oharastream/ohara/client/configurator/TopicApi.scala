@@ -44,6 +44,7 @@ object TopicApi {
   val CLEANUP_POLICY_KEY: String            = TopicConfig.CLEANUP_POLICY_CONFIG
   val MIN_CLEANABLE_DIRTY_RATIO_KEY: String = TopicConfig.MIN_CLEANABLE_DIRTY_RATIO_CONFIG
   val RETENTION_TIME_KEY: String            = "retention.time"
+  val COMPRESSION_TYPE_CONFIG: String = TopicConfig.COMPRESSION_TYPE_CONFIG
 
   /**
     * Use to convert ohara key to kafka key. Not all kafka namings are suitable to ohara. For example, the postfix "ms"
@@ -127,6 +128,11 @@ object TopicApi {
       _.key(RETENTION_TIME_KEY)
         .documentation(TopicConfig.RETENTION_MS_DOC)
         .optional(java.time.Duration.ofDays(7))
+    )
+    .definition(
+      _.key(COMPRESSION_TYPE_CONFIG)
+        .documentation(TopicConfig.COMPRESSION_TYPE_DOC)
+        .optional("producer")
     )
     .result
 
