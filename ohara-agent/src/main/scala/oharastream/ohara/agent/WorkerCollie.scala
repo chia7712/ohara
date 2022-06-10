@@ -149,7 +149,7 @@ trait WorkerCollie extends Collie {
                 .append(WorkerApi.STATUS_TOPIC_PARTITIONS_KEY, creation.statusTopicPartitions)
                 .append(WorkerApi.STATUS_TOPIC_REPLICATIONS_KEY, creation.statusTopicReplications)
                 .append(WorkerApi.COMPRESSION_TYPE_KEY, creation.compressionType.toString)
-                .append("rest.port", creation.clientPort)
+                .append("listeners", f"HTTP://:${creation.clientPort}")
                 .append("rest.advertised.host.name", newNode.hostname)
                 .append("rest.advertised.port", creation.clientPort)
                 // We offers the kafka recommend settings since we always overwrite the converter in starting connector
