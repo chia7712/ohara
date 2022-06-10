@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y wget git
 # download kafka
 # WARN: Please don't change the value of KAFKA_DIR
 ARG KAFKA_DIR=/opt/kafka
-ARG KAFKA_VERSION=3.1.1
+ARG KAFKA_VERSION=3.2.0
 ARG SCALA_VERSION=2.13.3
 ARG MIRROR_SITE=https://archive.apache.org/dist
 RUN wget $MIRROR_SITE/kafka/${KAFKA_VERSION}/kafka_$(echo $SCALA_VERSION | cut -d. -f1-2)-${KAFKA_VERSION}.tgz

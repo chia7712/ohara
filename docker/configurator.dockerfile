@@ -24,7 +24,7 @@ ARG BRANCH="main"
 ARG COMMIT=$BRANCH
 ARG REPO="https://github.com/skiptests/ohara.git"
 ARG BEFORE_BUILD=""
-ARG KAFKA_VERSION=3.1.1
+ARG KAFKA_VERSION=3.2.0
 ARG SCALA_VERSION=2.13.3
 # this argument is used to change default version of services
 ARG OHARA_VERSION=""
