@@ -17,28 +17,18 @@
 package oharastream.ohara.configurator.route
 
 import java.lang
-
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.server
 import akka.http.scaladsl.server.Directives.{entity, _}
 import oharastream.ohara.agent.{BrokerCollie, ServiceCollie, WorkerCollie}
 import oharastream.ohara.client.configurator.BrokerApi.BrokerClusterInfo
+import oharastream.ohara.client.configurator.ConnectorApi.ConnectorInfo
 import oharastream.ohara.client.configurator.FileInfoApi.{ClassInfo, FileInfo}
 import oharastream.ohara.client.configurator.InspectApi._
 import oharastream.ohara.client.configurator.StreamApi.StreamClusterInfo
 import oharastream.ohara.client.configurator.WorkerApi.WorkerClusterInfo
 import oharastream.ohara.client.configurator.ZookeeperApi.ZookeeperClusterInfo
-import oharastream.ohara.client.configurator.{
-  BrokerApi,
-  ErrorApi,
-  FileInfoApi,
-  InspectApi,
-  ShabondiApi,
-  StreamApi,
-  TopicApi,
-  WorkerApi,
-  ZookeeperApi
-}
+import oharastream.ohara.client.configurator.{BrokerApi, ConnectorApi, ErrorApi, FileInfoApi, InspectApi, ShabondiApi, StreamApi, TopicApi, WorkerApi, ZookeeperApi}
 import oharastream.ohara.client.database.DatabaseClient
 import oharastream.ohara.client.kafka.ConnectorAdmin
 import oharastream.ohara.common.data.Serializer
@@ -265,6 +255,26 @@ private[configurator] object InspectRoute {
           k8sUrls = k8sUrls
         )
       )
+    } ~ pathPrefix(ConnectorApi.PREFIX | ConnectorApi.KIND) {
+      path(Segment) { name =>
+        parameters(GROUP_KEY ? GROUP_DEFAULT) { group =>
+          complete(
+            dataStore
+              .value[ConnectorInfo](ObjectKey.of(group, name))
+              .flatMap {
+                c => dataStore.value[WorkerClusterInfo](c.workerClusterKey)
+                  .flatMap(workerCollie.connectorAdmin)
+                  .flatMap(_.connectorDefinitions())
+                  .map(classDefinitions =>
+                    ServiceDefinition(
+                      imageName = WorkerApi.IMAGE_NAME_DEFAULT,
+                      settingDefinitions = Seq.empty,
+                      classInfos = classDefinitions.get(c.className).map(Seq(_)).getOrElse(Seq.empty)
+                    ))
+              }
+          )
+        }
+      }
     } ~ pathPrefix(WorkerApi.PREFIX | WorkerApi.KIND) {
       path(Segment) { name =>
         parameters(GROUP_KEY ? GROUP_DEFAULT) { group =>
