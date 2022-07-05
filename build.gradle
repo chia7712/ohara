@@ -177,6 +177,18 @@ subprojects {
         classifier 'sources'
     }
 
+    String moduleName = it.name
+
+    task docJar(type: Jar) {
+        if (isJavaModule(moduleName)) {
+            from javadoc
+            classifier 'javadoc'
+        } else {
+            from scaladoc
+            classifier 'scaladoc'
+        }
+    }
+
     configurations {
         // pass the test configurations to the module depending on the test code of other modules
         testRuntime.extendsFrom archives
