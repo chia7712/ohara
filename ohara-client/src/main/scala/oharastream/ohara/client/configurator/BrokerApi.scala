@@ -43,6 +43,8 @@ object BrokerApi {
 
   val NUMBER_OF_REPLICATIONS_4_OFFSETS_TOPIC_KEY: String = "offsets.topic.replication.factor"
 
+  val NUMBER_OF_REPLICATIONS_4_TRANSACTION_TOPIC_KEY: String = "transaction.state.log.replication.factor"
+
   val NUMBER_OF_NETWORK_THREADS_KEY: String = "num.network.threads"
 
   val NUMBER_OF_IO_THREADS_KEY: String = "num.io.threads"
@@ -85,6 +87,11 @@ object BrokerApi {
     .definition(
       _.key(NUMBER_OF_REPLICATIONS_4_OFFSETS_TOPIC_KEY)
         .documentation("the number of replications for internal offset topic")
+        .positiveNumber(1)
+    )
+    .definition(
+      _.key(NUMBER_OF_REPLICATIONS_4_TRANSACTION_TOPIC_KEY)
+        .documentation("the number of replications for internal transaction topic")
         .positiveNumber(1)
     )
     .definition(
@@ -155,6 +162,8 @@ object BrokerApi {
     def numberOfPartitions: Int = raw.numberOfPartitions.get
     def numberOfReplications4OffsetsTopic: Int =
       raw.numberOfReplications4OffsetsTopic.get
+    def numberOfReplications4TransactionTopic: Int =
+      raw.numberOfReplications4TransactionTopic.get
     def numberOfNetworkThreads: Int           = raw.numberOfNetworkThreads.get
     def numberOfIoThreads: Int                = raw.numberOfIoThreads.get
     def maxOfPoolMemory: Long                 = raw.maxOfPoolMemory.get
@@ -192,6 +201,9 @@ object BrokerApi {
 
     def numberOfReplications4OffsetsTopic: Option[Int] =
       raw.get(NUMBER_OF_REPLICATIONS_4_OFFSETS_TOPIC_KEY).map(_.convertTo[Int])
+
+    def numberOfReplications4TransactionTopic: Option[Int] =
+      raw.get(NUMBER_OF_REPLICATIONS_4_TRANSACTION_TOPIC_KEY).map(_.convertTo[Int])
 
     def numberOfNetworkThreads: Option[Int] =
       raw.get(NUMBER_OF_NETWORK_THREADS_KEY).map(_.convertTo[Int])

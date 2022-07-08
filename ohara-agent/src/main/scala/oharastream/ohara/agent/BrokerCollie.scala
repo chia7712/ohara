@@ -133,6 +133,10 @@ trait BrokerCollie extends Collie {
                   BrokerApi.NUMBER_OF_REPLICATIONS_4_OFFSETS_TOPIC_KEY,
                   creation.numberOfReplications4OffsetsTopic
                 )
+                .append(
+                  BrokerApi.NUMBER_OF_REPLICATIONS_4_TRANSACTION_TOPIC_KEY,
+                  creation.numberOfReplications4OffsetsTopic
+                )
                 .append(BrokerApi.NUMBER_OF_NETWORK_THREADS_KEY, creation.numberOfNetworkThreads)
                 .append(BrokerApi.NUMBER_OF_IO_THREADS_KEY, creation.numberOfIoThreads)
                 .append(BrokerApi.MAX_OF_POOL_MEMORY_BYTES, creation.maxOfPoolMemory)
