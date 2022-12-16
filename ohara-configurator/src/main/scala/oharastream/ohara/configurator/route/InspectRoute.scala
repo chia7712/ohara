@@ -52,9 +52,9 @@ private[configurator] object InspectRoute {
     TopicData(
       records.reverse
         .filter(_.key().isPresent)
-        .map(record => (record.partition(), record.offset(), record.key().get(), record.headers().asScala))
+        .map(record => (record.partition(), record.offset(), record.key().get(), record.headers().asScala, record.timestamp()))
         .map {
-          case (partition, offset, bytes, headers) =>
+          case (partition, offset, bytes, headers, timestamp) =>
             var error: Option[String] = None
             def swallowException[T](f: => Option[T]): Option[T] =
               try f
@@ -67,6 +67,7 @@ private[configurator] object InspectRoute {
             Message(
               partition = partition,
               offset = offset,
+              timestamp = timestamp,
               // only Ohara source connectors have this header
               sourceClass = swallowException(
                 headers

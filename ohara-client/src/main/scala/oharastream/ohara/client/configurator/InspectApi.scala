@@ -120,12 +120,13 @@ object InspectApi {
   final case class Message(
     partition: Int,
     offset: Long,
+    timestamp: Long,
     sourceClass: Option[String],
     sourceKey: Option[ObjectKey],
     value: Option[JsValue],
     error: Option[String]
   )
-  implicit val MESSAGE_FORMAT: RootJsonFormat[Message] = jsonFormat6(Message)
+  implicit val MESSAGE_FORMAT: RootJsonFormat[Message] = jsonFormat7(Message)
 
   final case class TopicData(messages: Seq[Message])
   implicit val TOPIC_DATA_FORMAT: RootJsonFormat[TopicData] = jsonFormat1(TopicData)
