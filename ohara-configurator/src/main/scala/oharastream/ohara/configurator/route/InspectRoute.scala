@@ -187,6 +187,7 @@ private[configurator] object InspectRoute {
                         Message(
                           partition = 0,
                           offset = 0,
+                          timestamp = 0,
                           sourceClass = None,
                           sourceKey = None,
                           value = Some(
