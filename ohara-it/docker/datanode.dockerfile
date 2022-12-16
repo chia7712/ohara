@@ -60,7 +60,7 @@ RUN chmod +x /home/$USER/default/bin/hdfs-site.sh
 RUN chmod +x /home/$USER/default/bin/datanode.sh
 
 # copy Tini
-COPY --from=ghcr.io/skiptests/ohara/deps /tini /tini
+COPY --from=ghcr.io/chia7712/ohara/deps /tini /tini
 RUN chmod +x /tini
 
 USER $USER

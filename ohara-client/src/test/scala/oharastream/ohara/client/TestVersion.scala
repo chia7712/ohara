@@ -25,16 +25,16 @@ import org.scalatest.matchers.should.Matchers._
 class TestVersion extends OharaTest {
   @Test
   def testZookeeper(): Unit = {
-    ZookeeperApi.IMAGE_NAME_DEFAULT shouldBe s"ghcr.io/skiptests/ohara/zookeeper:${VersionUtils.VERSION}"
+    ZookeeperApi.IMAGE_NAME_DEFAULT shouldBe s"ghcr.io/chia7712/ohara/zookeeper:${VersionUtils.VERSION}"
   }
 
   @Test
   def testBroker(): Unit = {
-    BrokerApi.IMAGE_NAME_DEFAULT shouldBe s"ghcr.io/skiptests/ohara/broker:${VersionUtils.VERSION}"
+    BrokerApi.IMAGE_NAME_DEFAULT shouldBe s"ghcr.io/chia7712/ohara/broker:${VersionUtils.VERSION}"
   }
 
   @Test
   def testWorker(): Unit = {
-    WorkerApi.IMAGE_NAME_DEFAULT shouldBe s"ghcr.io/skiptests/ohara/connect-worker:${VersionUtils.VERSION}"
+    WorkerApi.IMAGE_NAME_DEFAULT shouldBe s"ghcr.io/chia7712/ohara/connect-worker:${VersionUtils.VERSION}"
   }
 }

@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install -y \
 # build ohara
 ARG BRANCH="main"
 ARG COMMIT=$BRANCH
-ARG REPO="https://github.com/skiptests/ohara.git"
+ARG REPO="https://github.com/chia7712/ohara.git"
 WORKDIR /ohara
 RUN git clone $REPO /ohara
 RUN git checkout $COMMIT

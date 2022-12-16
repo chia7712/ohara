@@ -34,7 +34,7 @@ object BrokerApi {
   /**
     * the default docker image used to run containers of broker cluster
     */
-  val IMAGE_NAME_DEFAULT: String = s"ghcr.io/skiptests/ohara/broker:${VersionUtils.VERSION}"
+  val IMAGE_NAME_DEFAULT: String = s"ghcr.io/chia7712/ohara/broker:${VersionUtils.VERSION}"
 
   val ZOOKEEPER_CLUSTER_KEY_KEY: String = "zookeeperClusterKey"
 

@@ -37,7 +37,7 @@ RUN echo "$KAFKA_VERSION" > $(find "${KAFKA_DIR}" -maxdepth 1 -type d -name "kaf
 # clone ohara
 ARG BRANCH="main"
 ARG COMMIT=$BRANCH
-ARG REPO="https://github.com/skiptests/ohara.git"
+ARG REPO="https://github.com/chia7712/ohara.git"
 ARG BEFORE_BUILD=""
 WORKDIR /testpatch/ohara
 RUN git clone $REPO /testpatch/ohara
@@ -65,7 +65,7 @@ ENV KAFKA_HOME=/home/$USER/default
 ENV PATH=$PATH:$KAFKA_HOME/bin
 
 # copy Tini
-COPY --from=ghcr.io/skiptests/ohara/deps /tini /tini
+COPY --from=ghcr.io/chia7712/ohara/deps /tini /tini
 RUN chmod +x /tini
 
 USER $USER

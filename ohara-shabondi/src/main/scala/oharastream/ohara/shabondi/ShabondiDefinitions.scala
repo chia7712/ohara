@@ -34,7 +34,7 @@ object ShabondiDefinitions {
   private[this] def orderInGroup(): Int = orderCounter.getAndIncrement
 
   val CORE_GROUP                        = "core"
-  val IMAGE_NAME_DEFAULT: String        = s"ghcr.io/skiptests/ohara/shabondi:${VersionUtils.VERSION}"
+  val IMAGE_NAME_DEFAULT: String        = s"ghcr.io/chia7712/ohara/shabondi:${VersionUtils.VERSION}"
   def basicDefinitions: Seq[SettingDef] = basicDefinitionMap.values.toList
   def sourceDefinitions: Seq[SettingDef] =
     WithDefinitions

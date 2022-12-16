@@ -81,8 +81,8 @@ then
   volumeArg="-v ${volume}:/home/ohara/hdfs-data"
 fi
 
-nameNodeImageName="ghcr.io/skiptests/ohara/hdfs-namenode"
-dataNodeImageName="ghcr.io/skiptests/ohara/hdfs-datanode"
+nameNodeImageName="ghcr.io/chia7712/ohara/hdfs-namenode"
+dataNodeImageName="ghcr.io/chia7712/ohara/hdfs-datanode"
 
 nameNodeContainerName="namenode"
 dataNodeContainerName="datanode"

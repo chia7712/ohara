@@ -45,7 +45,7 @@ class TestStreamApi extends OharaTest {
 
   @Test
   def checkVersion(): Unit = {
-    StreamApi.IMAGE_NAME_DEFAULT shouldBe s"ghcr.io/skiptests/ohara/stream:${VersionUtils.VERSION}"
+    StreamApi.IMAGE_NAME_DEFAULT shouldBe s"ghcr.io/chia7712/ohara/stream:${VersionUtils.VERSION}"
   }
 
   @Test

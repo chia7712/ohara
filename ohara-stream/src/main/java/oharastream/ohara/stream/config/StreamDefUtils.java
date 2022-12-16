@@ -66,7 +66,7 @@ public final class StreamDefUtils {
           .orderInGroup(ORDER_COUNTER.getAndIncrement())
           .displayName("Image name")
           .documentation("The image name of this stream running with")
-          .optional("ghcr.io/skiptests/ohara/stream:" + VersionUtils.VERSION)
+          .optional("ghcr.io/chia7712/ohara/stream:" + VersionUtils.VERSION)
           // In manager, user cannot change the image name
           .permission(SettingDef.Permission.CREATE_ONLY)
           .build();

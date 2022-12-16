@@ -270,13 +270,13 @@ object ContainerPlatform {
         val configuratorHostname = {
           val images = result(containerClient.imageNames())
           images
-            .filter(_._2.contains(s"ghcr.io/skiptests/ohara/configurator:${VersionUtils.VERSION}"))
+            .filter(_._2.contains(s"ghcr.io/chia7712/ohara/configurator:${VersionUtils.VERSION}"))
             .filterNot(e => coordinatorName.contains(e._1))
             .keys
             .headOption
             .getOrElse(
               throw new RuntimeException(
-                s"failed to find ghcr.io/skiptests/ohara/configurator:${VersionUtils.VERSION} from nodes:${images.keySet.mkString(",")}"
+                s"failed to find ghcr.io/chia7712/ohara/configurator:${VersionUtils.VERSION} from nodes:${images.keySet.mkString(",")}"
               )
             )
         }
@@ -286,7 +286,7 @@ object ContainerPlatform {
         result(
           containerClient.containerCreator
             .nodeName(configuratorHostname)
-            .imageName(s"ghcr.io/skiptests/ohara/configurator:${VersionUtils.VERSION}")
+            .imageName(s"ghcr.io/chia7712/ohara/configurator:${VersionUtils.VERSION}")
             .portMappings(Map(configuratorPort -> configuratorPort))
             .arguments(
               Seq(

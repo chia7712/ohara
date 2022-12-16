@@ -146,7 +146,7 @@ then
   ssh_user=$USER
 fi
 
-sambaDockerImageName="ghcr.io/skiptests/ohara/samba"
+sambaDockerImageName="ghcr.io/chia7712/ohara/samba"
 if [[ "${start}" == "true" ]];
 then
   echo "Pull Samba server docker image"

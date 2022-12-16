@@ -22,49 +22,49 @@ version: '3'
 
 services:
   configurator:
-    image: ghcr.io/skiptests/ohara/configurator:${TAG:-0.13.0-SNAPSHOT}
+    image: ghcr.io/chia7712/ohara/configurator:${TAG:-0.13.0-SNAPSHOT}
     build:
       context: .
       dockerfile: configurator.dockerfile
 
   manager:
-    image: ghcr.io/skiptests/ohara/manager:${TAG:-0.13.0-SNAPSHOT}
+    image: ghcr.io/chia7712/ohara/manager:${TAG:-0.13.0-SNAPSHOT}
     build:
       context: .
       dockerfile: manager.dockerfile
 
   stream:
-    image: ghcr.io/skiptests/ohara/stream:${TAG:-0.13.0-SNAPSHOT}
+    image: ghcr.io/chia7712/ohara/stream:${TAG:-0.13.0-SNAPSHOT}
     build:
       context: .
       dockerfile: stream.dockerfile
 
   shabondi:
-    image: ghcr.io/skiptests/ohara/shabondi:${TAG:-0.13.0-SNAPSHOT}
+    image: ghcr.io/chia7712/ohara/shabondi:${TAG:-0.13.0-SNAPSHOT}
     build:
       context: .
       dockerfile: shabondi.dockerfile
 
   backend:
-    image: ghcr.io/skiptests/ohara/backend:${TAG:-0.13.0-SNAPSHOT}
+    image: ghcr.io/chia7712/ohara/backend:${TAG:-0.13.0-SNAPSHOT}
     build:
       context: .
       dockerfile: backend.dockerfile
 
   zookeeper:
-    image: ghcr.io/skiptests/ohara/zookeeper:${TAG:-0.13.0-SNAPSHOT}
+    image: ghcr.io/chia7712/ohara/zookeeper:${TAG:-0.13.0-SNAPSHOT}
     build:
       context: .
       dockerfile: zookeeper.dockerfile
 
   broker:
-    image: ghcr.io/skiptests/ohara/broker:${TAG:-0.13.0-SNAPSHOT}
+    image: ghcr.io/chia7712/ohara/broker:${TAG:-0.13.0-SNAPSHOT}
     build:
       context: .
       dockerfile: broker.dockerfile
 
   worker:
-    image: ghcr.io/skiptests/ohara/connect-worker:${TAG:-0.13.0-SNAPSHOT}
+    image: ghcr.io/chia7712/ohara/connect-worker:${TAG:-0.13.0-SNAPSHOT}
     build:
       context: .
       dockerfile: worker.dockerfile
